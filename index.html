@@ -285,10 +285,23 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>📊 老师数据表格</h1>
+      <div>
+        <h1>📊 老师数据表格</h1>
+        <p style="margin-top: 8px; font-size: 13px; opacity: 0.9;">
+           数据来源于用户真实测评反馈，仅供参考 |
+          <a href="https://bycby88.github.io/ZSFK/" target="_blank" style="color: white; text-decoration: underline; font-weight: 500;">
+            参与测评 →
+          </a>
+           |
+          <a href="https://tatokdym.org/cqfkq" target="_blank" style="color: white; text-decoration: underline; font-weight: 500;">
+            详细报告内容 →
+          </a>
+        </p>
+      </div>
       <div class="controls">
         <input type="text" class="search-box" id="globalSearch" placeholder="全局搜索...">
         <button class="btn btn-clear" onclick="clearAllFilters()">🔄 清除筛选</button>
+        <button class="btn btn-primary" onclick="exportCSV()" style="margin-left: 8px;">📥 导出CSV</button>
       </div>
     </div>
     
@@ -347,12 +360,6 @@
               <div class="th-content">
                 <div class="th-label" onclick="sortTable('avgScore')">综合评分 <span class="sort-icon">↕</span></div>
                 <input type="text" class="filter-input" data-field="avgScore" placeholder="最小-最大">
-              </div>
-            </th>
-            <th>
-              <div class="th-content">
-                <div class="th-label" onclick="sortTable('totalTests')">测评次数 <span class="sort-icon">↕</span></div>
-                <input type="text" class="filter-input" data-field="totalTests" placeholder="≥ 最小值">
               </div>
             </th>
             <th>
@@ -613,7 +620,6 @@
           <td>${teacher.price}档</td>
           <td>${teacher.bust}</td>
           <td class="${teacher.avgScore >= 8.5 ? 'score-high' : teacher.avgScore >= 6 ? 'score-medium' : 'score-low'}"><strong>${teacher.avgScore.toFixed(2)}</strong></td>
-          <td>${teacher.totalTests}</td>
           <td class="score-high">${teacher.goodCount}</td>
           <td class="score-medium">${teacher.mediumCount}</td>
           <td class="score-low">${teacher.badCount}</td>
@@ -799,8 +805,8 @@
     }
 
     function exportCSV() {
-      const headers = ['排名', '老师ID', '姓名', '年龄', '身高', '体重', '单价', '胸围', '综合评分', '测评次数', '好评', '中评', '差评', '颜值', '胸型', '腰腹', '臀腿', '配合度', '超级兵次数', '认证状态', '特色标签'];
-      
+      const headers = ['排名', '老师ID', '姓名', '年龄', '身高', '体重', '单价', '胸围', '综合评分', '好评', '中评', '差评', '颜值', '胸型', '腰腹', '臀腿', '配合度', '超级兵次数', '认证状态', '特色标签'];
+
       const rows = currentData.map((t, index) => [
         index + 1,
         t.teacher_id,
@@ -811,7 +817,6 @@
         t.price,
         t.bust,
         t.avgScore.toFixed(2),
-        t.totalTests,
         t.goodCount,
         t.mediumCount,
         t.badCount,

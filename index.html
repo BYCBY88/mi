@@ -223,22 +223,18 @@
       opacity: 0.3;
       transition: all 0.2s;
     }
-
     .th-label:hover .sort-icon {
       opacity: 0.7;
     }
-
     .sort-active .sort-icon {
       opacity: 1;
       color: #667eea;
       font-weight: bold;
     }
-
     .sort-active {
       color: #667eea;
       font-weight: 600;
     }
-
     .active-filter {
       background: #fff3cd !important;
     }
@@ -247,78 +243,62 @@
       body {
         padding: 10px;
       }
-
       .container {
         border-radius: 4px;
       }
-
       .header {
         flex-direction: column;
         gap: 12px;
         padding: 15px;
         align-items: flex-start;
       }
-
       .header h1 {
         font-size: 18px;
       }
-
       .header p {
         font-size: 12px;
       }
-
       .header > div > div {
         flex-wrap: wrap;
       }
-
       .header a {
         padding: 6px 12px !important;
         font-size: 12px !important;
       }
-
       .controls {
         width: 100%;
         flex-direction: column;
         gap: 8px;
       }
-
       .search-box {
         width: 100%;
       }
-
       .btn {
         flex: 1;
         margin-left: 0 !important;
       }
-
       .controls > div:last-child {
         display: flex;
         gap: 8px;
         width: 100%;
       }
-
       .table-wrapper {
         max-height: 60vh;
       }
-
       table {
         font-size: 11px;
       }
-
       th, td {
         padding: 5px 3px;
       }
-
       .th-content {
         min-width: 60px;
       }
-
       .filter-input {
         font-size: 9px;
         padding: 2px 3px;
         min-width: 50px;
       }
-
       .stats {
         flex-wrap: wrap;
         gap: 10px;
@@ -492,11 +472,9 @@
       <span>超级兵测评 <strong id="superSoldierTotal">0</strong> 次</span>
     </div>
   </div>
-
   <script>
-    // PocketBase 配置
-    const PB_URL = 'https://bygbyg.cloud-ip.cc';
-
+    // Cloudflare Workers API 配置
+    const API_URL = 'https://super-soldier-api.bycby88.workers.dev';
     let currentData = [];
     let sortField = 'avgScore';
     let sortDirection = 'desc';
@@ -504,29 +482,28 @@
     let globalSearchTerm = '';
 
     // 缓存配置
-    const CACHE_KEY = 'teacher_table_data';
-    const CACHE_TIME_KEY = 'teacher_table_cache_time';
+    const CACHE_KEY = 'teacher_table_data_cf';
+    const CACHE_TIME_KEY = 'teacher_table_cache_time_cf';
     const CACHE_DURATION = 30 * 60 * 1000; // 30分钟
 
-    // 从 PocketBase 加载数据
+    // 从 Cloudflare Workers API 加载数据
     async function loadData() {
       const now = Date.now();
       const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
-
+      
       // 检查缓存是否有效
       if (cachedTime && (now - parseInt(cachedTime)) < CACHE_DURATION) {
         const cachedData = localStorage.getItem(CACHE_KEY);
         if (cachedData) {
           currentData = JSON.parse(cachedData);
           renderTable(currentData);
-          return; // 直接使用缓存，不请求API
+          return;
         }
       }
 
       try {
-        const response = await fetch(`${PB_URL}/api/collections/test_records/records?page=1&perPage=1000`);
-        if (!response.ok) throw new Error('加载失败');
-
+        const response = await fetch(`${API_URL}/api/collections/test_records/records?page=1&perPage=1000&sort=-created_at`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const result = await response.json();
         const records = result.items || [];
 
@@ -566,14 +543,13 @@
           const score = Number(record.final_score || 0);
           teacherStats[teacherId].totalScore += score;
           teacherStats[teacherId].count += 1;
-
           teacherStats[teacherId].totalScoreLook += Number(record.score_look || 0);
           teacherStats[teacherId].totalScoreBreast += Number(record.score_breast || 0);
           teacherStats[teacherId].totalScoreWaist += Number(record.score_waist || 0);
           teacherStats[teacherId].totalScoreBodyLower += Number(record.score_body_lower || 0);
           teacherStats[teacherId].totalScoreService += Number(record.score_service || 0);
 
-          if (record.is_super_soldier_review === true) {
+          if (record.is_super_soldier_review === true || record.is_super_soldier_review === 1) {
             teacherStats[teacherId].superSoldierCount += 1;
           }
 
@@ -585,6 +561,7 @@
             teacherStats[teacherId].badCount += 1;
           }
 
+          // 注意：Workers API 当前不支持 features 字段，这里保留兼容
           if (record.features && Array.isArray(record.features)) {
             record.features.forEach(feature => {
               if (!teacherStats[teacherId].features.includes(feature)) {
@@ -685,7 +662,7 @@
 
     function applyFilters() {
       let filtered = [...currentData];
-
+      
       // 应用全局搜索
       if (globalSearchTerm) {
         const term = globalSearchTerm.toLowerCase();
@@ -697,7 +674,7 @@
       }
 
       // 定义只按最小值过滤的字段
-      const minOnlyFields = ['totalTests', 'goodCount', 'mediumCount', 'badCount',
+      const minOnlyFields = ['goodCount', 'mediumCount', 'badCount',
                              'avgScoreLook', 'avgScoreBreast', 'avgScoreWaist',
                              'avgScoreBodyLower', 'avgScoreService', 'superSoldierCount'];
 
@@ -708,22 +685,22 @@
 
         filtered = filtered.filter(t => {
           const value = t[field];
-
+          
           // 处理布尔值筛选
           if (field === 'isVerified') {
             return String(t.isVerified) === filterValue;
           }
-
+          
           // 处理数组字段（features）
           if (field === 'features') {
             return t.features.some(f => f.toLowerCase().includes(filterValue.toLowerCase()));
           }
-
+          
           // 处理字符串筛选
           if (typeof value === 'string') {
             return value.toLowerCase().includes(filterValue.toLowerCase());
           }
-
+          
           // 处理数字筛选
           if (typeof value === 'number') {
             const numFilter = parseFloat(filterValue);
@@ -732,6 +709,7 @@
               if (minOnlyFields.includes(field)) {
                 return value >= numFilter;
               }
+              
               // 其他数值字段支持范围筛选（如 "5-10"）
               if (filterValue.includes('-')) {
                 const parts = filterValue.split('-').map(p => parseFloat(p.trim()));
@@ -739,11 +717,12 @@
                   return value >= parts[0] && value <= parts[1];
                 }
               }
+              
               // 默认精确匹配
               return value === numFilter;
             }
           }
-
+          
           return true;
         });
       });
@@ -752,7 +731,6 @@
       if (sortField) {
         filtered.sort((a, b) => {
           let aVal, bVal;
-
           switch(sortField) {
             case 'name':
               aVal = a.teacher_name;
@@ -778,10 +756,6 @@
               aVal = a.avgScore;
               bVal = b.avgScore;
               break;
-            case 'totalTests':
-              aVal = a.count;
-              bVal = b.count;
-              break;
             case 'superSoldier':
               aVal = a.superSoldierCount;
               bVal = b.superSoldierCount;
@@ -789,13 +763,13 @@
             default:
               return 0;
           }
-
+          
           if (typeof aVal === 'string') {
             return sortDirection === 'asc'
               ? aVal.localeCompare(bVal)
               : bVal.localeCompare(aVal);
           }
-
+          
           return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
         });
       }
@@ -847,7 +821,6 @@
 
     function exportCSV() {
       const headers = ['排名', '老师ID', '姓名', '年龄', '身高', '体重', '单价', '胸围', '综合评分', '好评', '中评', '差评', '颜值', '胸型', '腰腹', '臀腿', '配合度', '超级兵次数', '认证状态', '特色标签'];
-
       const rows = currentData.map((t, index) => [
         index + 1,
         t.teacher_id,
@@ -880,11 +853,9 @@
     }
 
     function clearAllFilters() {
-      // 清空所有过滤器
       filters = {};
       globalSearchTerm = '';
-
-      // 清空所有输入框
+      
       document.querySelectorAll('.filter-input').forEach(input => {
         if (input.tagName === 'SELECT') {
           input.value = '';
@@ -893,11 +864,9 @@
         }
       });
       document.getElementById('globalSearch').value = '';
-
-      // 移除高亮
+      
       document.querySelectorAll('th').forEach(th => th.classList.remove('active-filter'));
-
-      // 重新渲染（保持当前排序）
+      
       applyFilters();
     }
 
@@ -906,13 +875,11 @@
       input.addEventListener('input', function(e) {
         const field = e.target.dataset.field;
         const value = e.target.value.trim();
-
         if (value) {
           filters[field] = value;
         } else {
           delete filters[field];
         }
-
         applyFilters();
       });
     });

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -7,6 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
+  <meta name="cache-control" content="no-cache">
   <title>老师数据表格 v2</title>
   <style>
     * {
@@ -331,6 +331,8 @@
       }
       .table-wrapper {
         max-height: 60vh;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
       }
       table {
         font-size: 11px;
@@ -539,7 +541,7 @@
       return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     }
 
-    // 安全的缓存存储
+    // 安全的缓存存储（修复移动端localStorage无痕失效）
     function setCache(key, value) {
       try {
         if (key === 'data') {
@@ -548,7 +550,7 @@
         }
         localStorage.setItem('teacher_table_' + key, JSON.stringify(value));
       } catch (e) {
-        console.warn('Storage not available:', e);
+        console.warn('本地存储不可用，仅使用内存缓存', e);
       }
     }
 
@@ -560,7 +562,7 @@
         const item = localStorage.getItem('teacher_table_' + key);
         return item ? JSON.parse(item) : null;
       } catch (e) {
-        console.warn('Storage not available:', e);
+        console.warn('读取本地存储失败', e);
         return key === 'data' ? memoryCache : null;
       }
     }
@@ -582,7 +584,7 @@
       document.getElementById('tableBody').innerHTML = errorHtml;
     }
 
-    // 从 Cloudflare Workers API 加载数据
+    // 从 Cloudflare Workers API 加载数据（修复sort字段、8秒超时、移除mode:cors）
     async function loadData() {
       showLoading();
       
@@ -598,20 +600,18 @@
       }
 
       try {
-        // 添加超时处理
+        // 手机弱网8秒超时
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
         
         const response = await fetch(
           `${API_URL}/api/collections/test_records/records?page=1&perPage=1000&sort=-created_at`,
           {
             method: 'GET',
             headers: {
-              'Accept': 'application/json',
               'Content-Type': 'application/json'
             },
-            signal: controller.signal,
-            mode: 'cors'
+            signal: controller.signal
           }
         );
         
@@ -757,277 +757,4 @@
           ? `<span class="badge badge-blue">${teacher.superSoldierCount}次</span>` 
           : '-';
         
-        const featuresHtml = teacher.features && teacher.features.length > 0 
-          ? teacher.features.map(f => `<span class="tag">${f}</span>`).join('') 
-          : '-';
-        
-        row.innerHTML = `
-          <td>${index + 1}</td>
-          <td style="font-family: monospace; font-size: 12px;">${teacher.teacher_id}</td>
-          <td><strong>${teacher.teacher_name}</strong></td>
-          <td>${teacher.age}</td>
-          <td>${teacher.height}${teacher.height !== '-' ? 'cm' : ''}</td>
-          <td>${teacher.weight}${teacher.weight !== '-' ? 'kg' : ''}</td>
-          <td>${teacher.price}${teacher.price !== '-' ? '档' : ''}</td>
-          <td>${teacher.bust}</td>
-          <td class="${teacher.avgScore >= 8.5 ? 'score-high' : teacher.avgScore >= 6 ? 'score-medium' : 'score-low'}"><strong>${teacher.avgScore.toFixed(2)}</strong></td>
-          <td class="score-high">${teacher.goodCount}</td>
-          <td class="score-medium">${teacher.mediumCount}</td>
-          <td class="score-low">${teacher.badCount}</td>
-          <td>${teacher.avgScoreLook.toFixed(1)}</td>
-          <td>${teacher.avgScoreBreast.toFixed(1)}</td>
-          <td>${teacher.avgScoreWaist.toFixed(1)}</td>
-          <td>${teacher.avgScoreBodyLower.toFixed(1)}</td>
-          <td>${teacher.avgScoreService.toFixed(1)}</td>
-          <td>${superSoldierText}</td>
-          <td>${verifiedBadge}</td>
-          <td>${featuresHtml}</td>
-        `;
-        
-        tbody.appendChild(row);
-      });
-      
-      // 更新统计
-      document.getElementById('totalCount').textContent = data.length;
-      document.getElementById('verifiedCount').textContent = data.filter(t => t.isVerified).length;
-      document.getElementById('superSoldierTotal').textContent = data.reduce((sum, t) => sum + (t.superSoldierCount || 0), 0);
-    }
-
-    function applyFilters() {
-      let filtered = [...currentData];
-      
-      // 应用全局搜索
-      if (globalSearchTerm) {
-        const term = globalSearchTerm.toLowerCase();
-        filtered = filtered.filter(t =>
-          (t.teacher_name && t.teacher_name.toLowerCase().includes(term)) ||
-          (t.teacher_id && t.teacher_id.toLowerCase().includes(term)) ||
-          (t.features && t.features.some(f => f.toLowerCase().includes(term)))
-        );
-      }
-
-      // 定义只按最小值过滤的字段
-      const minOnlyFields = ['goodCount', 'mediumCount', 'badCount',
-                             'avgScoreLook', 'avgScoreBreast', 'avgScoreWaist',
-                             'avgScoreBodyLower', 'avgScoreService', 'superSoldierCount'];
-
-      // 应用列过滤
-      Object.keys(filters).forEach(field => {
-        const filterValue = filters[field];
-        if (!filterValue) return;
-
-        filtered = filtered.filter(t => {
-          const value = t[field];
-          
-          // 处理布尔值筛选
-          if (field === 'isVerified') {
-            return String(t.isVerified) === filterValue;
-          }
-          
-          // 处理数组字段（features）
-          if (field === 'features') {
-            return t.features && t.features.some(f => f.toLowerCase().includes(filterValue.toLowerCase()));
-          }
-          
-          // 处理字符串筛选
-          if (typeof value === 'string') {
-            return value.toLowerCase().includes(filterValue.toLowerCase());
-          }
-          
-          // 处理数字筛选
-          if (typeof value === 'number') {
-            const numFilter = parseFloat(filterValue);
-            if (!isNaN(numFilter)) {
-              // 对于指定字段，只按最小值过滤（>=）
-              if (minOnlyFields.includes(field)) {
-                return value >= numFilter;
-              }
-              
-              // 其他数值字段支持范围筛选（如 "5-10"）
-              if (filterValue.includes('-')) {
-                const parts = filterValue.split('-').map(p => parseFloat(p.trim()));
-                if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-                  return value >= parts[0] && value <= parts[1];
-                }
-              }
-              
-              // 默认精确匹配
-              return value === numFilter;
-            }
-          }
-          
-          return true;
-        });
-      });
-
-      // 重新排序
-      if (sortField) {
-        filtered.sort((a, b) => {
-          let aVal, bVal;
-          switch(sortField) {
-            case 'name':
-              aVal = a.teacher_name || '';
-              bVal = b.teacher_name || '';
-              break;
-            case 'age':
-              aVal = parseFloat(a.age) || 0;
-              bVal = parseFloat(b.age) || 0;
-              break;
-            case 'height':
-              aVal = parseFloat(a.height) || 0;
-              bVal = parseFloat(b.height) || 0;
-              break;
-            case 'weight':
-              aVal = parseFloat(a.weight) || 0;
-              bVal = parseFloat(b.weight) || 0;
-              break;
-            case 'price':
-              aVal = parseFloat(a.price) || 0;
-              bVal = parseFloat(b.price) || 0;
-              break;
-            case 'avgScore':
-              aVal = a.avgScore || 0;
-              bVal = b.avgScore || 0;
-              break;
-            case 'superSoldier':
-              aVal = a.superSoldierCount || 0;
-              bVal = b.superSoldierCount || 0;
-              break;
-            default:
-              return 0;
-          }
-          
-          if (typeof aVal === 'string') {
-            return sortDirection === 'asc'
-              ? aVal.localeCompare(bVal)
-              : bVal.localeCompare(aVal);
-          }
-          
-          return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
-        });
-      }
-
-      renderTable(filtered);
-
-      // 高亮有过滤器的列
-      document.querySelectorAll('.filter-input').forEach(input => {
-        const field = input.dataset.field;
-        const th = input.closest('th');
-        if (filters[field]) {
-          th.classList.add('active-filter');
-        } else {
-          th.classList.remove('active-filter');
-        }
-      });
-    }
-
-    function sortTable(field) {
-      if (sortField === field) {
-        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-      } else {
-        sortField = field;
-        sortDirection = 'desc';
-      }
-
-      // 更新排序指示器
-      document.querySelectorAll('.th-label').forEach(label => {
-        label.classList.remove('sort-active');
-        const icon = label.querySelector('.sort-icon');
-        if (icon) {
-          icon.textContent = '↕';
-        }
-      });
-
-      // 高亮当前排序列
-      const activeLabels = document.querySelectorAll(`.th-label[onclick="sortTable('${field}')"]`);
-      activeLabels.forEach(label => {
-        label.classList.add('sort-active');
-        const icon = label.querySelector('.sort-icon');
-        if (icon) {
-          icon.textContent = sortDirection === 'asc' ? '↑' : '↓';
-        }
-      });
-
-      // 重新应用过滤和排序
-      applyFilters();
-    }
-
-    function exportCSV() {
-      const headers = ['排名', '老师ID', '姓名', '年龄', '身高', '体重', '单价', '胸围', '综合评分', '好评', '中评', '差评', '颜值', '胸型', '腰腹', '臀腿', '配合度', '超级兵次数', '认证状态', '特色标签'];
-      const rows = currentData.map((t, index) => [
-        index + 1,
-        t.teacher_id,
-        t.teacher_name,
-        t.age,
-        t.height,
-        t.weight,
-        t.price,
-        t.bust,
-        t.avgScore.toFixed(2),
-        t.goodCount,
-        t.mediumCount,
-        t.badCount,
-        t.avgScoreLook.toFixed(1),
-        t.avgScoreBreast.toFixed(1),
-        t.avgScoreWaist.toFixed(1),
-        t.avgScoreBodyLower.toFixed(1),
-        t.avgScoreService.toFixed(1),
-        t.superSoldierCount,
-        t.isVerified ? '已认证' : '未认证',
-        (t.features || []).join(';')
-      ]);
-      
-      const csvContent = '\ufeff' + [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `老师数据_${new Date().toLocaleDateString()}.csv`;
-      link.click();
-    }
-
-    function clearAllFilters() {
-      filters = {};
-      globalSearchTerm = '';
-      
-      document.querySelectorAll('.filter-input').forEach(input => {
-        if (input.tagName === 'SELECT') {
-          input.value = '';
-        } else {
-          input.value = '';
-        }
-      });
-      document.getElementById('globalSearch').value = '';
-      
-      document.querySelectorAll('th').forEach(th => th.classList.remove('active-filter'));
-      
-      applyFilters();
-    }
-
-    // 绑定过滤器输入事件
-    document.querySelectorAll('.filter-input').forEach(input => {
-      input.addEventListener('input', function(e) {
-        const field = e.target.dataset.field;
-        const value = e.target.value.trim();
-        if (value) {
-          filters[field] = value;
-        } else {
-          delete filters[field];
-        }
-        applyFilters();
-      });
-    });
-
-    // 全局搜索
-    document.getElementById('globalSearch').addEventListener('input', function(e) {
-      globalSearchTerm = e.target.value.trim();
-      applyFilters();
-    });
-
-    // 页面加载时获取数据
-    document.addEventListener('DOMContentLoaded', function() {
-      // 延迟加载，确保页面完全渲染
-      setTimeout(loadData, 100);
-    });
-  </script>
-</body>
-</html>
+        const featuresHtml = teacher.features && teacher.features.length >

@@ -2,269 +2,307 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>老师数据表格</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
     }
-    html {
-      -webkit-text-size-adjust: 100%;
-      text-size-adjust: 100%;
-    }
+    
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: #f5f7fa;
-      padding: 12px;
+      background: #f5f5f5;
+      padding: 20px;
     }
+    
     .container {
       max-width: 1400px;
       margin: 0 auto;
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       overflow: hidden;
     }
+    
     .header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #fff;
-      padding: 16px;
+      color: white;
+      padding: 20px 30px;
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      gap:12px;
+      align-items: center;
     }
+    
     .header h1 {
-      font-size: 20px;
+      font-size: 24px;
       font-weight: 600;
     }
-    .header p {
-      font-size: 13px;
-      opacity: 0.9;
-      margin-top:6px;
-    }
-    .header .link-wrap {
-      margin-top:10px;
-    }
-    .header a {
-      display: inline-block;
-      padding: 8px 14px;
-      background: rgba(255,255,255,0.18);
-      color: #fff;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 500;
-      font-size: 13px;
-      border: 1px solid rgba(255,255,255,0.25);
-      transition: 0.2s;
-    }
-    .header a:active {
-      background: rgba(255,255,255,0.3);
-    }
+    
     .controls {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       align-items: center;
-      flex-wrap: wrap;
     }
+    
     .search-box {
-      padding: 10px 12px;
+      padding: 8px 12px;
       border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      width: 170px;
-      outline:none;
+      border-radius: 4px;
+      font-size: 14px;
+      width: 200px;
     }
+    
     .btn {
-      min-height:44px;
-      padding: 0 14px;
+      padding: 8px 16px;
       border: none;
-      border-radius: 8px;
+      border-radius: 4px;
       cursor: pointer;
-      font-size: 15px;
+      font-size: 14px;
       transition: all 0.2s;
-      touch-action: manipulation;
     }
+    
+    .btn-primary {
+      background: white;
+      color: #667eea;
+      font-weight: 500;
+    }
+    
+    .btn-primary:hover {
+      background: #f0f0f0;
+    }
+    
     .btn-clear {
-      background: rgba(255,255,255,0.22);
-      color: #fff;
+      background: #6c757d;
+      color: white;
     }
-    .btn-clear:active {
-      background: rgba(255,255,255,0.35);
+    
+    .btn-clear:hover {
+      background: #5a6268;
     }
+    
     .table-wrapper {
       overflow-x: auto;
-      max-height: 65vh;
-      -webkit-overflow-scrolling: touch;
+      max-height: 70vh;
     }
+    
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
-      min-width: max-content;
     }
-    thead th {
+    
+    thead {
       position: sticky;
       top: 0;
-      z-index:10;
-      background: #f8f9fc;
+      z-index: 10;
     }
+    
     th {
-      padding: 7px 5px;
+      background: #f8f9fa;
+      padding: 8px 6px;
       text-align: left;
       font-weight: 600;
-      color: #2d3748;
-      border-bottom: 2px solid #e2e8f0;
+      color: #333;
+      border-bottom: 2px solid #e0e0e0;
       white-space: nowrap;
       vertical-align: top;
     }
+    
     .th-content {
       display: flex;
       flex-direction: column;
-      gap:5px;
+      gap: 4px;
     }
+    
     .th-label {
       display: flex;
       align-items: center;
-      gap:4px;
+      gap: 4px;
       cursor: pointer;
       user-select: none;
     }
+    
+    .th-label:hover {
+      color: #667eea;
+    }
+    
     .filter-input {
-      width:100%;
-      padding:4px 6px;
-      border:1px solid #d1d5db;
-      border-radius:4px;
-      font-size:16px;
-      outline:none;
-      background:#fff;
+      width: 100%;
+      padding: 4px 6px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      font-size: 11px;
+      outline: none;
     }
+    
     .filter-input:focus {
-      border-color:#667eea;
-      box-shadow:0 0 0 2px rgba(102,126,234,0.12);
+      border-color: #667eea;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
     }
+    
     td {
-      padding:9px 6px;
-      border-bottom:1px solid #f1f5f9;
+      padding: 10px;
+      border-bottom: 1px solid #f0f0f0;
       white-space: nowrap;
     }
-    tbody tr:active {
-      background:#f1f5f9;
+    
+    tr:hover {
+      background: #f8f9fa;
     }
+    
     .badge {
       display: inline-block;
-      padding:2px 8px;
-      border-radius:12px;
-      font-size:11px;
-      font-weight:500;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
     }
+    
     .badge-green {
-      background:#dcfce7;
-      color:#15803d;
+      background: #d4edda;
+      color: #155724;
     }
+    
     .badge-gray {
-      background:#e5e7eb;
-      color:#4b5563;
+      background: #e0e0e0;
+      color: #666;
     }
     .tag {
       display: inline-block;
-      padding:2px 6px;
-      background:#dbeafe;
-      color:#1d4ed8;
-      border-radius:4px;
-      font-size:11px;
-      margin-right:4px;
+      padding: 2px 6px;
+      background: #e3f2fd;
+      color: #1976d2;
+      border-radius: 3px;
+      font-size: 11px;
+      margin-right: 4px;
     }
+    
     .score-high {
-      color:#16a34a;
-      font-weight:600;
+      color: #28a745;
+      font-weight: 600;
     }
+    
     .score-medium {
-      color:#ca8a04;
-      font-weight:600;
+      color: #ffc107;
+      font-weight: 600;
     }
+    
     .score-low {
-      color:#dc2626;
-      font-weight:600;
+      color: #dc3545;
+      font-weight: 600;
     }
+    
     .stats {
-      padding:14px 16px;
-      background:#f8f9fc;
-      border-top:1px solid #e2e8f0;
-      display:flex;
-      gap:24px;
-      font-size:14px;
-      color:#4b5563;
-      flex-wrap:wrap;
+      padding: 15px 30px;
+      background: #f8f9fa;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      gap: 30px;
+      font-size: 14px;
+      color: #666;
+      align-items: center;
     }
+    
     .stats strong {
-      color:#1e293b;
+      color: #333;
     }
+    
     .sort-icon {
-      font-size:12px;
-      opacity:0.35;
+      display: inline-block;
+      margin-left: 4px;
+      font-size: 12px;
+      opacity: 0.3;
+      transition: all 0.2s;
+    }
+    .th-label:hover .sort-icon {
+      opacity: 0.7;
     }
     .sort-active .sort-icon {
-      opacity:1;
-      color:#667eea;
+      opacity: 1;
+      color: #667eea;
+      font-weight: bold;
     }
     .sort-active {
-      color:#667eea;
-      font-weight:600;
+      color: #667eea;
+      font-weight: 600;
     }
-    .active-filter th {
-      background:#fffbeb !important;
+    .active-filter {
+      background: #fff3cd !important;
     }
-    .loading-text {
-      text-align:center;
-      padding:36px 12px;
-      color:#64748b;
+    .loading-text{
+      text-align:center;padding:40px;color:#666;
     }
-    .reload-btn {
-      margin-top:10px;
-      min-height:42px;
-      padding:0 16px;
-      border-radius:8px;
-      border:none;
-      background:#667eea;
-      color:#fff;
+    .reload-btn{
+      margin-top:12px;padding:6px 16px;
     }
-
-    /* 手机端适配 */
-    @media (max-width:768px) {
+    
+    @media (max-width: 768px) {
       body {
-        padding:8px;
+        padding: 10px;
+      }
+      .container {
+        border-radius: 4px;
       }
       .header {
-        flex-direction:column;
-        padding:14px;
+        flex-direction: column;
+        gap: 12px;
+        padding: 15px;
+        align-items: flex-start;
       }
       .header h1 {
-        font-size:18px;
+        font-size: 18px;
+      }
+      .header p {
+        font-size: 12px;
+      }
+      .header > div > div {
+        flex-wrap: wrap;
+      }
+      .header a {
+        padding: 6px 12px !important;
+        font-size: 12px !important;
       }
       .controls {
-        width:100%;
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
       }
       .search-box {
-        width:100%;
+        width: 100%;
+      }
+      .btn {
+        flex: 1;
+        margin-left: 0 !important;
+      }
+      .controls > div:last-child {
+        display: flex;
+        gap: 8px;
+        width: 100%;
       }
       .table-wrapper {
-        max-height:58vh;
+        max-height: 60vh;
       }
       table {
-        font-size:11px;
+        font-size: 11px;
       }
       th, td {
-        padding:6px 4px;
+        padding: 5px 3px;
+      }
+      .th-content {
+        min-width: 60px;
+      }
+      .filter-input {
+        font-size: 9px;
+        padding: 2px 3px;
+        min-width: 50px;
       }
       .stats {
-        padding:10px 14px;
-        gap:12px;
-        font-size:12px;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 10px 15px;
+        font-size: 12px;
       }
     }
   </style>
@@ -274,17 +312,21 @@
     <div class="header">
       <div>
         <h1>📊 老师数据表格</h1>
-        <p>数据来源于用户真实测评反馈，仅供参考</p>
-        <div class="link-wrap">
-          <a href="https://bycby88.github.io/ZSFK/" target="_blank">参与测评(浏览器打开) →</a>
+        <p style="margin-top: 8px; font-size: 13px; opacity: 0.9;">
+           数据来源于用户真实测评反馈，仅供参考
+        </p>
+        <div style="margin-top: 12px; display: flex; gap: 10px;">
+          <a href="https://bycby88.github.io/ZSFK/" target="_blank" style="display: inline-block; padding: 8px 16px; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 4px; font-weight: 500; font-size: 13px; border: 1px solid rgba(255,255,255,0.3); transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+             参与测评(使用浏览器打开) →
+          </a>
         </div>
       </div>
       <div class="controls">
-        <input type="text" class="search-box" id="globalSearch" placeholder="全局搜索姓名/ID/标签">
+        <input type="text" class="search-box" id="globalSearch" placeholder="全局搜索...">
         <button class="btn btn-clear" onclick="clearAllFilters()">🔄 清除筛选</button>
       </div>
     </div>
-
+    
     <div class="table-wrapper">
       <table id="dataTable">
         <thead>
@@ -297,97 +339,97 @@
             <th>
               <div class="th-content">
                 <div>老师ID</div>
-                <input class="filter-input" data-field="teacher_id" placeholder="ID">
+                <input type="text" class="filter-input" data-field="teacher_id" placeholder="过滤ID...">
               </div>
             </th>
             <th>
               <div class="th-content">
                 <div class="th-label" onclick="sortTable('name')">姓名 <span class="sort-icon">↕</span></div>
-                <input class="filter-input" data-field="teacher_name" placeholder="姓名">
+                <input type="text" class="filter-input" data-field="teacher_name" placeholder="过滤姓名...">
               </div>
             </th>
             <th>
               <div class="th-content">
                 <div class="th-label" onclick="sortTable('age')">年龄 <span class="sort-icon">↕</span></div>
-                <input class="filter-input" data-field="age" placeholder="最小-最大">
+                <input type="text" class="filter-input" data-field="age" placeholder="最小-最大">
               </div>
             </th>
             <th>
               <div class="th-content">
                 <div class="th-label" onclick="sortTable('height')">身高 <span class="sort-icon">↕</span></div>
-                <input class="filter-input" data-field="height" placeholder="最小-最大">
+                <input type="text" class="filter-input" data-field="height" placeholder="最小-最大">
               </div>
             </th>
             <th>
               <div class="th-content">
                 <div class="th-label" onclick="sortTable('weight')">体重 <span class="sort-icon">↕</span></div>
-                <input class="filter-input" data-field="weight" placeholder="最小-最大">
+                <input type="text" class="filter-input" data-field="weight" placeholder="最小-最大">
               </div>
             </th>
             <th>
               <div class="th-content">
                 <div class="th-label" onclick="sortTable('price')">单价 <span class="sort-icon">↕</span></div>
-                <input class="filter-input" data-field="price" placeholder="最小-最大">
+                <input type="text" class="filter-input" data-field="price" placeholder="最小-最大">
               </div>
             </th>
             <th>
               <div class="th-content">
                 <div>胸围</div>
-                <input class="filter-input" data-field="bust" placeholder="筛选">
+                <input type="text" class="filter-input" data-field="bust" placeholder="过滤胸围...">
               </div>
             </th>
             <th>
               <div class="th-content">
                 <div class="th-label" onclick="sortTable('avgScore')">综合评分 <span class="sort-icon">↕</span></div>
-                <input class="filter-input" data-field="avgScore" placeholder="≥数值">
+                <input type="text" class="filter-input" data-field="avgScore" placeholder="最小-最大">
               </div>
             </th>
             <th>
               <div class="th-content">
                 <div>好评</div>
-                <input class="filter-input" data-field="goodCount" placeholder="≥数值">
+                <input type="text" class="filter-input" data-field="goodCount" placeholder="≥ 最小值">
               </div>
             </th>
             <th>
               <div class="th-content">
                 <div>中评</div>
-                <input class="filter-input" data-field="mediumCount" placeholder="≥数值">
+                <input type="text" class="filter-input" data-field="mediumCount" placeholder="≥ 最小值">
               </div>
             </th>
             <th>
               <div class="th-content">
                 <div>差评</div>
-                <input class="filter-input" data-field="badCount" placeholder="≥数值">
+                <input type="text" class="filter-input" data-field="badCount" placeholder="≥ 最小值">
               </div>
             </th>
             <th>
               <div class="th-content">
                 <div>颜值</div>
-                <input class="filter-input" data-field="avgScoreLook" placeholder="≥数值">
+                <input type="text" class="filter-input" data-field="avgScoreLook" placeholder="≥ 最小值">
               </div>
             </th>
             <th>
               <div class="th-content">
                 <div>胸型</div>
-                <input class="filter-input" data-field="avgScoreBreast" placeholder="≥数值">
+                <input type="text" class="filter-input" data-field="avgScoreBreast" placeholder="≥ 最小值">
               </div>
             </th>
             <th>
               <div class="th-content">
                 <div>腰腹</div>
-                <input class="filter-input" data-field="avgScoreWaist" placeholder="≥数值">
+                <input type="text" class="filter-input" data-field="avgScoreWaist" placeholder="≥ 最小值">
               </div>
             </th>
             <th>
               <div class="th-content">
                 <div>臀腿</div>
-                <input class="filter-input" data-field="avgScoreBodyLower" placeholder="≥数值">
+                <input type="text" class="filter-input" data-field="avgScoreBodyLower" placeholder="≥ 最小值">
               </div>
             </th>
             <th>
               <div class="th-content">
                 <div>配合度</div>
-                <input class="filter-input" data-field="avgScoreService" placeholder="≥数值">
+                <input type="text" class="filter-input" data-field="avgScoreService" placeholder="≥ 最小值">
               </div>
             </th>
             <th>
@@ -403,7 +445,7 @@
             <th>
               <div class="th-content">
                 <div>特色标签</div>
-                <input class="filter-input" data-field="features" placeholder="标签搜索">
+                <input type="text" class="filter-input" data-field="features" placeholder="过滤标签...">
               </div>
             </th>
           </tr>
@@ -413,14 +455,14 @@
         </tbody>
       </table>
     </div>
-
+    
     <div class="stats">
       <span>共 <strong id="totalCount">0</strong> 位老师</span>
       <span>已认证 <strong id="verifiedCount">0</strong> 位</span>
     </div>
   </div>
-
   <script>
+    // Cloudflare Workers API 配置
     const API_URL = 'https://api.byg88.biz';
     let currentData = [];
     let sortField = 'avgScore';
@@ -429,26 +471,32 @@
     let globalSearchTerm = '';
     let hasRetried = false;
 
+    // 缓存配置
     const CACHE_KEY = 'teacher_table_data_cf';
     const CACHE_TIME_KEY = 'teacher_table_cache_time_cf';
-    const CACHE_DURATION = 30 * 60 * 1000;
+    const CACHE_DURATION = 30 * 60 * 1000; // 30分钟
 
+    // 带超时的fetch封装
     function fetchWithTimeout(url, timeout = 8000) {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeout);
-      return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
+      const id = setTimeout(() => controller.abort(), timeout);
+      return fetch(url, { signal: controller.signal })
+        .finally(() => clearTimeout(id));
     }
 
+    // 从 Cloudflare Workers API 加载数据
     async function loadData() {
       const tbody = document.getElementById('tableBody');
       const now = Date.now();
       const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
-
-      if (cachedTime && (now - Number(cachedTime)) < CACHE_DURATION) {
-        const cache = localStorage.getItem(CACHE_KEY);
-        if (cache) {
-          currentData = JSON.parse(cache);
+      
+      // 优先读取有效缓存
+      if (cachedTime && (now - parseInt(cachedTime)) < CACHE_DURATION) {
+        const cachedData = localStorage.getItem(CACHE_KEY);
+        if (cachedData) {
+          currentData = JSON.parse(cachedData);
           renderTable(currentData);
+          // 后台静默刷新最新数据（不阻塞页面展示）
           remoteRefresh();
           return;
         }
@@ -456,280 +504,379 @@
 
       try {
         tbody.innerHTML = '<tr><td colspan="19" class="loading-text">请求远程数据中……</td></tr>';
-        const res = await fetchWithTimeout(`${API_URL}/api/collections/test_records/records?page=1&perPage=1000&sort=-created_at`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-        const records = json.items || [];
-        if (!records.length) {
-          tbody.innerHTML = '<tr><td colspan="19" class="loading-text">暂无测评数据</td></tr>';
+        const response = await fetchWithTimeout(`${API_URL}/api/collections/test_records/records?page=1&perPage=1000&sort=-created_at`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const result = await response.json();
+        const records = result.items || [];
+
+        if (records.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="19" style="text-align:center;padding:40px;color:#999;">暂无数据</td></tr>';
           return;
         }
 
-        const group = {};
-        for (const r of records) {
-          const tid = r.teacher_id;
-          if (!group[tid]) {
-            group[tid] = {
-              teacher_id: tid,
-              teacher_name: r.teacher_name,
-              age: r.age,
-              height: r.height,
-              weight: r.weight,
-              price: r.price,
-              bust: r.bust,
-              totalScore:0, count:0,
-              goodCount:0, mediumCount:0, badCount:0,
-              features:[],
-              totalScoreLook:0, totalScoreBreast:0, totalScoreWaist:0, totalScoreBodyLower:0, totalScoreService:0
+        // 按老师ID分组统计
+        const teacherStats = {};
+        for (const record of records) {
+          const teacherId = record.teacher_id;
+          if (!teacherStats[teacherId]) {
+            teacherStats[teacherId] = {
+              teacher_id: teacherId,
+              teacher_name: record.teacher_name,
+              age: record.age,
+              height: record.height,
+              weight: record.weight,
+              price: record.price,
+              bust: record.bust,
+              totalScore: 0,
+              count: 0,
+              goodCount: 0,
+              mediumCount: 0,
+              badCount: 0,
+              features: [],
+              totalScoreLook: 0,
+              totalScoreBreast: 0,
+              totalScoreWaist: 0,
+              totalScoreBodyLower: 0,
+              totalScoreService: 0,
             };
           }
-          const s = Number(r.final_score || 0);
-          const item = group[tid];
-          item.totalScore += s;
-          item.count +=1;
-          item.totalScoreLook += Number(r.score_look||0);
-          item.totalScoreBreast += Number(r.score_breast||0);
-          item.totalScoreWaist += Number(r.score_waist||0);
-          item.totalScoreBodyLower += Number(r.score_body_lower||0);
-          item.totalScoreService += Number(r.score_service||0);
 
-          if(s >=8.5) item.goodCount++;
-          else if(s >=6) item.mediumCount++;
-          else item.badCount++;
+          const score = Number(record.final_score || 0);
+          teacherStats[teacherId].totalScore += score;
+          teacherStats[teacherId].count += 1;
+          teacherStats[teacherId].totalScoreLook += Number(record.score_look || 0);
+          teacherStats[teacherId].totalScoreBreast += Number(record.score_breast || 0);
+          teacherStats[teacherId].totalScoreWaist += Number(record.score_waist || 0);
+          teacherStats[teacherId].totalScoreBodyLower += Number(record.score_body_lower || 0);
+          teacherStats[teacherId].totalScoreService += Number(record.score_service || 0);
 
-          if(Array.isArray(r.features)){
-            r.features.forEach(f=>{
-              if(!item.features.includes(f)) item.features.push(f);
-            })
+          if (score >= 8.5) {
+            teacherStats[teacherId].goodCount += 1;
+          } else if (score >= 6) {
+            teacherStats[teacherId].mediumCount += 1;
+          } else {
+            teacherStats[teacherId].badCount += 1;
+          }
+
+          if (record.features && Array.isArray(record.features)) {
+            record.features.forEach(feature => {
+              if (!teacherStats[teacherId].features.includes(feature)) {
+                teacherStats[teacherId].features.push(feature);
+              }
+            });
           }
         }
 
-        currentData = Object.values(group).map(st=>{
-          const evaluators = new Set(records.filter(x=>x.teacher_id === st.teacher_id).map(x=>x.evaluator));
-          return {
-            ...st,
-            avgScore: st.totalScore / st.count,
-            avgScoreLook: st.totalScoreLook / st.count,
-            avgScoreBreast: st.totalScoreBreast / st.count,
-            avgScoreWaist: st.totalScoreWaist / st.count,
-            avgScoreBodyLower: st.totalScoreBodyLower / st.count,
-            avgScoreService: st.totalScoreService / st.count,
-            isVerified: evaluators.size >5
-          }
-        })
+        // 转换数组、计算平均分
+        currentData = Object.values(teacherStats).map(stats => ({
+          ...stats,
+          avgScore: stats.totalScore / stats.count,
+          avgScoreLook: stats.totalScoreLook / stats.count,
+          avgScoreBreast: stats.totalScoreBreast / stats.count,
+          avgScoreWaist: stats.totalScoreWaist / stats.count,
+          avgScoreBodyLower: stats.totalScoreBodyLower / stats.count,
+          avgScoreService: stats.totalScoreService / stats.count,
+          isVerified: new Set(records.filter(r => r.teacher_id === stats.teacher_id).map(r => r.evaluator)).size > 5,
+        }));
+
         sortField = 'avgScore';
         sortDirection = 'desc';
-        currentData.sort((a,b)=>b.avgScore - a.avgScore);
+        currentData.sort((a, b) => b.avgScore - a.avgScore);
+
+        const avgScoreLabels = document.querySelectorAll('.th-label[onclick="sortTable(\'avgScore\')"]');
+        avgScoreLabels.forEach(label => {
+          label.classList.add('sort-active');
+          const icon = label.querySelector('.sort-icon');
+          if (icon) icon.textContent = '↓';
+        });
 
         renderTable(currentData);
+
+        // 更新本地缓存
         localStorage.setItem(CACHE_KEY, JSON.stringify(currentData));
-        localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
-      } catch (err) {
-        console.error(err);
-        if(!hasRetried){
+        localStorage.setItem(CACHE_TIME_KEY, now.toString());
+      } catch (error) {
+        console.error('加载异常', error);
+        // 自动重试一次（仅首次失败重试）
+        if (!hasRetried) {
           hasRetried = true;
-          tbody.innerHTML = '<tr><td colspan="19" class="loading-text">网络波动，自动重试……</td></tr>';
-          setTimeout(loadData,1200);
+          tbody.innerHTML = '<tr><td colspan="19" class="loading-text">网络波动，正在自动重试……</td></tr>';
+          setTimeout(loadData, 1200);
           return;
         }
-        tbody.innerHTML = `<tr><td colspan="19" class="loading-text">加载失败<br><button class="reload-btn" onclick="loadData()">点击重新加载</button></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="19" style="text-align:center;padding:40px;color:#dc3545;">加载数据失败<br><button class="btn reload-btn" onclick="loadData()">点击重新加载</button></td></tr>`;
       }
     }
 
+    // 后台静默刷新远程最新数据（缓存存在时调用）
     async function remoteRefresh() {
       try {
-        const res = await fetchWithTimeout(`${API_URL}/api/collections/test_records/records?page=1&perPage=1000&sort=-created_at`);
-        if(!res.ok) return;
-        const json = await res.json();
-        const records = json.items || [];
-        if(!records.length) return;
-        const group = {};
-        for(const r of records){
-          const tid = r.teacher_id;
-          if (!group[tid]) {
-            group[tid] = {
-              teacher_id: tid,
-              teacher_name: r.teacher_name,
-              age: r.age,
-              height: r.height,
-              weight: r.weight,
-              price: r.price,
-              bust: r.bust,
-              totalScore:0, count:0,
-              goodCount:0, mediumCount:0, badCount:0,
-              features:[],
-              totalScoreLook:0, totalScoreBreast:0, totalScoreWaist:0, totalScoreBodyLower:0, totalScoreService:0
+        const response = await fetchWithTimeout(`${API_URL}/api/collections/test_records/records?page=1&perPage=1000&sort=-created_at`);
+        if (!response.ok) return;
+        const result = await response.json();
+        const records = result.items || [];
+        if(records.length === 0) return;
+        const teacherStats = {};
+        for (const record of records) {
+          const teacherId = record.teacher_id;
+          if (!teacherStats[teacherId]) {
+            teacherStats[teacherId] = {
+              teacher_id: teacherId,
+              teacher_name: record.teacher_name,
+              age: record.age,
+              height: record.height,
+              weight: record.weight,
+              price: record.price,
+              bust: record.bust,
+              totalScore: 0,
+              count: 0,
+              goodCount: 0,
+              mediumCount: 0,
+              badCount: 0,
+              features: [],
+              totalScoreLook: 0,
+              totalScoreBreast: 0,
+              totalScoreWaist: 0,
+              totalScoreBodyLower: 0,
+              totalScoreService: 0,
             };
           }
-          const s = Number(r.final_score||0);
-          const item = group[tid];
-          item.totalScore += s; item.count++;
-          item.totalScoreLook += Number(r.score_look||0);
-          item.totalScoreBreast += Number(r.score_breast||0);
-          item.totalScoreWaist += Number(r.score_waist||0);
-          item.totalScoreBodyLower += Number(r.score_body_lower||0);
-          item.totalScoreService += Number(r.score_service||0);
-          if(s>=8.5) item.goodCount++;
-          else if(s>=6) item.mediumCount++;
-          else item.badCount++;
-          if(Array.isArray(r.features)) r.features.forEach(f=>{if(!item.features.includes(f)) item.features.push(f)});
-        }
-        const newData = Object.values(group).map(st=>{
-          const ev = new Set(records.filter(x=>x.teacher_id === st.teacher_id).map(x=>x.evaluator));
-          return {
-            ...st,
-            avgScore: st.totalScore / st.count,
-            avgScoreLook: st.totalScoreLook / st.count,
-            avgScoreBreast: st.totalScoreBreast / st.count,
-            avgScoreWaist: st.totalScoreWaist / st.count,
-            avgScoreBodyLower: st.totalScoreBodyLower / st.count,
-            avgScoreService: st.totalScoreService / st.count,
-            isVerified: ev.size >5
+          const score = Number(record.final_score || 0);
+          teacherStats[teacherId].totalScore += score;
+          teacherStats[teacherId].count += 1;
+          teacherStats[teacherId].totalScoreLook += Number(record.score_look || 0);
+          teacherStats[teacherId].totalScoreBreast += Number(record.score_breast || 0);
+          teacherStats[teacherId].totalScoreWaist += Number(record.score_waist || 0);
+          teacherStats[teacherId].totalScoreBodyLower += Number(record.score_body_lower || 0);
+          teacherStats[teacherId].totalScoreService += Number(record.score_service || 0);
+          if (score >= 8.5) teacherStats[teacherId].goodCount +=1;
+          else if(score>=6) teacherStats[teacherId].mediumCount +=1;
+          else teacherStats[teacherId].badCount +=1;
+          if(record.features && Array.isArray(record.features)){
+            record.features.forEach(f=>{
+              if(!teacherStats[teacherId].features.includes(f)) teacherStats[teacherId].features.push(f);
+            })
           }
-        })
+        }
+        const newData = Object.values(teacherStats).map(stats => ({
+          ...stats,
+          avgScore: stats.totalScore / stats.count,
+          avgScoreLook: stats.totalScoreLook / stats.count,
+          avgScoreBreast: stats.totalScoreBreast / stats.count,
+          avgScoreWaist: stats.totalScoreWaist / stats.count,
+          avgScoreBodyLower: stats.totalScoreBodyLower / stats.count,
+          avgScoreService: stats.totalScoreService / stats.count,
+          isVerified: new Set(records.filter(r => r.teacher_id === stats.teacher_id).map(r => r.evaluator)).size > 5,
+        }));
         localStorage.setItem(CACHE_KEY, JSON.stringify(newData));
-        localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+        localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
       }catch(e){}
     }
 
     function renderTable(data) {
       const tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
-      data.forEach((t, idx)=>{
-        const verified = t.isVerified
-          ? '<span class="badge badge-green">已认证</span>'
+      
+      data.forEach((teacher, index) => {
+        const row = document.createElement('tr');
+        
+        const verifiedBadge = teacher.isVerified 
+          ? '<span class="badge badge-green">已认证</span>' 
           : '<span class="badge badge-gray">未认证</span>';
-        const tags = t.features.length ? t.features.map(x=>`<span class="tag">${x}</span>`).join('') : '-';
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${idx+1}</td>
-          <td style="font-family:monospace;">${t.teacher_id}</td>
-          <td><strong>${t.teacher_name}</strong></td>
-          <td>${t.age}</td>
-          <td>${t.height}cm</td>
-          <td>${t.weight}kg</td>
-          <td>${t.price}档</td>
-          <td>${t.bust}</td>
-          <td class="${t.avgScore>=8.5?'score-high':t.avgScore>=6?'score-medium':'score-low'}"><strong>${t.avgScore.toFixed(2)}</strong></td>
-          <td class="score-high">${t.goodCount}</td>
-          <td class="score-medium">${t.mediumCount}</td>
-          <td class="score-low">${t.badCount}</td>
-          <td>${t.avgScoreLook.toFixed(1)}</td>
-          <td>${t.avgScoreBreast.toFixed(1)}</td>
-          <td>${t.avgScoreWaist.toFixed(1)}</td>
-          <td>${t.avgScoreBodyLower.toFixed(1)}</td>
-          <td>${t.avgScoreService.toFixed(1)}</td>
-          <td>${verified}</td>
-          <td>${tags}</td>
+        
+        const featuresHtml = teacher.features.length > 0 
+          ? teacher.features.map(f => `<span class="tag">${f}</span>`).join('') 
+          : '-';
+        
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td style="font-family: monospace; font-size: 12px;">${teacher.teacher_id}</td>
+          <td><strong>${teacher.teacher_name}</strong></td>
+          <td>${teacher.age}</td>
+          <td>${teacher.height}cm</td>
+          <td>${teacher.weight}kg</td>
+          <td>${teacher.price}档</td>
+          <td>${teacher.bust}</td>
+          <td class="${teacher.avgScore >= 8.5 ? 'score-high' : teacher.avgScore >= 6 ? 'score-medium' : 'score-low'}"><strong>${teacher.avgScore.toFixed(2)}</strong></td>
+          <td class="score-high">${teacher.goodCount}</td>
+          <td class="score-medium">${teacher.mediumCount}</td>
+          <td class="score-low">${teacher.badCount}</td>
+          <td>${teacher.avgScoreLook.toFixed(1)}</td>
+          <td>${teacher.avgScoreBreast.toFixed(1)}</td>
+          <td>${teacher.avgScoreWaist.toFixed(1)}</td>
+          <td>${teacher.avgScoreBodyLower.toFixed(1)}</td>
+          <td>${teacher.avgScoreService.toFixed(1)}</td>
+          <td>${verifiedBadge}</td>
+          <td>${featuresHtml}</td>
         `;
-        tbody.appendChild(tr);
-      })
+        
+        tbody.appendChild(row);
+      });
+      
       document.getElementById('totalCount').textContent = data.length;
-      document.getElementById('verifiedCount').textContent = data.filter(x=>x.isVerified).length;
+      document.getElementById('verifiedCount').textContent = data.filter(t => t.isVerified).length;
     }
 
     function applyFilters() {
-      let list = [...currentData];
-      if(globalSearchTerm){
-        const kw = globalSearchTerm.toLowerCase();
-        list = list.filter(t=>
-          t.teacher_name.toLowerCase().includes(kw)
-          || t.teacher_id.toLowerCase().includes(kw)
-          || t.features.some(f=>f.toLowerCase().includes(kw))
-        )
+      let filtered = [...currentData];
+      
+      if (globalSearchTerm) {
+        const term = globalSearchTerm.toLowerCase();
+        filtered = filtered.filter(t =>
+          t.teacher_name.toLowerCase().includes(term) ||
+          t.teacher_id.toLowerCase().includes(term) ||
+          t.features.some(f => f.toLowerCase().includes(term))
+        );
       }
-      const numMinFields = ['goodCount','mediumCount','badCount','avgScoreLook','avgScoreBreast','avgScoreWaist','avgScoreBodyLower','avgScoreService'];
-      Object.entries(filters).forEach(([field, val])=>{
-        if(!val) return;
-        list = list.filter(t=>{
-          const v = t[field];
-          if(field === 'isVerified') return String(t.isVerified) === val;
-          if(field === 'features') return t.features.some(f=>f.toLowerCase().includes(val.toLowerCase()));
-          if(typeof v === 'string') return v.toLowerCase().includes(val.toLowerCase());
-          if(typeof v === 'number'){
-            const num = parseFloat(val);
-            if(isNaN(num)) return true;
-            if(numMinFields.includes(field)) return v >= num;
-            if(val.includes('-')){
-              const [min,max] = val.split('-').map(x=>parseFloat(x.trim()));
-              return v >= min && v <= max;
-            }
-            return v === num;
+
+      const minOnlyFields = ['goodCount', 'mediumCount', 'badCount',
+                             'avgScoreLook', 'avgScoreBreast', 'avgScoreWaist',
+                             'avgScoreBodyLower', 'avgScoreService'];
+
+      Object.keys(filters).forEach(field => {
+        const filterValue = filters[field];
+        if (!filterValue) return;
+
+        filtered = filtered.filter(t => {
+          const value = t[field];
+          
+          if (field === 'isVerified') {
+            return String(t.isVerified) === filterValue;
           }
+          
+          if (field === 'features') {
+            return t.features.some(f => f.toLowerCase().includes(filterValue.toLowerCase()));
+          }
+          
+          if (typeof value === 'string') {
+            return value.toLowerCase().includes(filterValue.toLowerCase());
+          }
+          
+          if (typeof value === 'number') {
+            const numFilter = parseFloat(filterValue);
+            if (!isNaN(numFilter)) {
+              if (minOnlyFields.includes(field)) {
+                return value >= numFilter;
+              }
+              if (filterValue.includes('-')) {
+                const parts = filterValue.split('-').map(p => parseFloat(p.trim()));
+                if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                  return value >= parts[0] && value <= parts[1];
+                }
+              }
+              return value === numFilter;
+            }
+          }
+          
           return true;
-        })
-      })
-      if(sortField){
-        list.sort((a,b)=>{
-          let av,bv;
-          switch(sortField){
-            case 'name': av=a.teacher_name; bv=b.teacher_name;break;
-            case 'age': av=a.age;bv=b.age;break;
-            case 'height': av=a.height;bv=b.height;break;
-            case 'weight': av=a.weight;bv=b.weight;break;
-            case 'price': av=a.price;bv=b.price;break;
-            case 'avgScore': av=a.avgScore;bv=b.avgScore;break;
+        });
+      });
+
+      if (sortField) {
+        filtered.sort((a, b) => {
+          let aVal, bVal;
+          switch(sortField) {
+            case 'name':
+              aVal = a.teacher_name;bVal = b.teacher_name;break;
+            case 'age':
+              aVal = a.age;bVal = b.age;break;
+            case 'height':
+              aVal = a.height;bVal = b.height;break;
+            case 'weight':
+              aVal = a.weight;bVal = b.weight;break;
+            case 'price':
+              aVal = a.price;bVal = b.price;break;
+            case 'avgScore':
+              aVal = a.avgScore;bVal = b.avgScore;break;
             default: return 0;
           }
-          if(typeof av === 'string') return sortDirection==='asc' ? av.localeCompare(bv) : bv.localeCompare(av);
-          return sortDirection==='asc' ? av - bv : bv - av;
-        })
+          
+          if (typeof aVal === 'string') {
+            return sortDirection === 'asc'
+              ? aVal.localeCompare(bVal)
+              : bVal.localeCompare(aVal);
+          }
+          
+          return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+        });
       }
-      renderTable(list);
-      document.querySelectorAll('.filter-input').forEach(input=>{
+
+      renderTable(filtered);
+
+      document.querySelectorAll('.filter-input').forEach(input => {
+        const field = input.dataset.field;
         const th = input.closest('th');
-        if(filters[input.dataset.field]) th.classList.add('active-filter');
-        else th.classList.remove('active-filter');
-      })
+        if (filters[field]) {
+          th.classList.add('active-filter');
+        } else {
+          th.classList.remove('active-filter');
+        }
+      });
     }
 
     function sortTable(field) {
-      if(sortField === field) sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-      else {
+      if (sortField === field) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
         sortField = field;
         sortDirection = 'desc';
       }
-      document.querySelectorAll('.th-label').forEach(l=>{
-        l.classList.remove('sort-active');
-        const icon = l.querySelector('.sort-icon');
-        if(icon) icon.textContent = '↕';
-      })
-      const active = document.querySelectorAll(`.th-label[onclick="sortTable('${field}')"]`);
-      active.forEach(l=>{
-        l.classList.add('sort-active');
-        const icon = l.querySelector('.sort-icon');
-        if(icon) icon.textContent = sortDirection === 'asc' ? '↑' : '↓';
-      })
+
+      document.querySelectorAll('.th-label').forEach(label => {
+        label.classList.remove('sort-active');
+        const icon = label.querySelector('.sort-icon');
+        if (icon) icon.textContent = '↕';
+      });
+
+      const activeLabels = document.querySelectorAll(`.th-label[onclick="sortTable('${field}')"]`);
+      activeLabels.forEach(label => {
+        label.classList.add('sort-active');
+        const icon = label.querySelector('.sort-icon');
+        if (icon) icon.textContent = sortDirection === 'asc' ? '↑' : '↓';
+      });
+
       applyFilters();
     }
 
     function clearAllFilters() {
       filters = {};
       globalSearchTerm = '';
-      document.querySelectorAll('.filter-input').forEach(i=>{
-        if(i.tagName === 'SELECT') i.value = '';
-        else i.value = '';
-      })
+      
+      document.querySelectorAll('.filter-input').forEach(input => {
+        if (input.tagName === 'SELECT') {
+          input.value = '';
+        } else {
+          input.value = '';
+        }
+      });
       document.getElementById('globalSearch').value = '';
-      document.querySelectorAll('th').forEach(th=>th.classList.remove('active-filter'));
+      
+      document.querySelectorAll('th').forEach(th => th.classList.remove('active-filter'));
+      
       applyFilters();
     }
 
-    document.querySelectorAll('.filter-input').forEach(input=>{
-      input.addEventListener('input', e=>{
-        const f = e.target.dataset.field;
-        const v = e.target.value.trim();
-        if(v) filters[f] = v;
-        else delete filters[f];
+    document.querySelectorAll('.filter-input').forEach(input => {
+      input.addEventListener('input', function(e) {
+        const field = e.target.dataset.field;
+        const value = e.target.value.trim();
+        if (value) {
+          filters[field] = value;
+        } else {
+          delete filters[field];
+        }
         applyFilters();
-      })
-    })
-    document.getElementById('globalSearch').addEventListener('input',e=>{
+      });
+    });
+
+    document.getElementById('globalSearch').addEventListener('input', function(e) {
       globalSearchTerm = e.target.value.trim();
       applyFilters();
-    })
+    });
 
-    document.addEventListener('DOMContentLoaded', loadData);
+    document.addEventListener('DOMContentLoaded', ()=>{
+      loadData();
+    });
   </script>
 </body>
 </html>

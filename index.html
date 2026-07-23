@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>数据表格(来源于测试报告自动计算)</title>
+  <title>数据表格(源于测试报告自动计算)</title>
   <style>
     * {
       margin: 0;
@@ -160,9 +160,10 @@
       z-index: 10;
     }
     
+    /* 表头左右内边距压缩 */
     th {
       background: #f8f9fa;
-      padding: 8px 6px;
+      padding: 8px 4px;
       text-align: left;
       font-weight: 600;
       color: #333;
@@ -189,8 +190,9 @@
       color: #667eea;
     }
     
+    /* 单元格左右间距大幅缩小 */
     td {
-      padding: 10px;
+      padding: 6px 4px;
       border-bottom: 1px solid #f0f0f0;
       white-space: nowrap;
     }
@@ -314,6 +316,11 @@
       .th-content {
         min-width: 60px;
       }
+      .filter-input {
+        font-size: 9px;
+        padding: 2px 3px;
+        min-width: 50px;
+      }
       .stats {
         flex-wrap: wrap;
         gap: 10px;
@@ -351,7 +358,7 @@
       </div>
       <div class="filter-item">
         <label>单价区间：</label>
-        <input type="text" class="filter-input-top" data-field="price" placeholder="例如3-10">
+        <input type="text" class="filter-input-top" data-field="price" placeholder="例如 3-10">
       </div>
     </div>
 
@@ -753,6 +760,7 @@
       });
       
       document.getElementById('totalCount').textContent = data.length;
+      // 统计已认证人数：isVerified=true 的老师数量
       document.getElementById('verifiedCount').textContent = data.filter(t => t.isVerified).length;
     }
 
@@ -870,6 +878,7 @@
 
     // 浏览器后退缓存页面强制重排
     window.addEventListener('pageshow', (e) => {
+      // 浏览器缓存后退页面，强制重新加载数据
       if (e.persisted && rawAllData.length > 0) {
         currentData = [...rawAllData].sort(sortCompareFunc);
         applyFilters();

@@ -171,23 +171,6 @@
       background: #f8f9fa;
     }
     
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 500;
-    }
-    
-    .badge-green {
-      background: #d4edda;
-      color: #155724;
-    }
-    
-    .badge-gray {
-      background: #e0e0e0;
-      color: #666;
-    }
     .tag {
       display: inline-block;
       padding: 2px 6px;
@@ -341,118 +324,105 @@
       <table id="dataTable">
         <thead>
           <tr>
-            <!-- 第1列 综合评分 -->
+            <!-- 第1列 综合评分 仅排序无筛选框 -->
             <th>
               <div class="th-content">
                 <div class="th-label sort-active" onclick="sortTable('avgScore')">综合评分 <span class="sort-icon">↓</span></div>
-                <input type="text" class="filter-input" data-field="avgScore" placeholder="最小-最大">
               </div>
             </th>
-            <!-- 第2列 姓名 -->
+            <!-- 第2列 姓名 仅排序无筛选框 -->
             <th>
               <div class="th-content">
                 <div class="th-label" onclick="sortTable('name')">姓名 <span class="sort-icon">↕</span></div>
-                <input type="text" class="filter-input" data-field="teacher_name" placeholder="过滤姓名...">
               </div>
             </th>
-            <!-- 第3列 好评 -->
+            <!-- 第3列 好评 无筛选框 -->
             <th>
               <div class="th-content">
                 <div>好评</div>
-                <input type="text" class="filter-input" data-field="goodCount" placeholder="≥ 最小值">
               </div>
             </th>
-            <!-- 第4列 中评 -->
+            <!-- 第4列 中评 无筛选框 -->
             <th>
               <div class="th-content">
                 <div>中评</div>
-                <input type="text" class="filter-input" data-field="mediumCount" placeholder="≥ 最小值">
               </div>
             </th>
-            <!-- 第5列 差评 -->
+            <!-- 第5列 差评 无筛选框 -->
             <th>
               <div class="th-content">
                 <div>差评</div>
-                <input type="text" class="filter-input" data-field="badCount" placeholder="≥ 最小值">
               </div>
             </th>
-            <!-- 剩余字段顺延 -->
+            <!-- 老师ID 无筛选框 -->
             <th>
               <div class="th-content">
                 <div>老师ID</div>
-                <input type="text" class="filter-input" data-field="teacher_id" placeholder="过滤ID...">
               </div>
             </th>
+            <!-- 年龄 仅排序无筛选框 -->
             <th>
               <div class="th-content">
                 <div class="th-label" onclick="sortTable('age')">年龄 <span class="sort-icon">↕</span></div>
-                <input type="text" class="filter-input" data-field="age" placeholder="最小-最大">
               </div>
             </th>
+            <!-- 身高 仅排序无筛选框 -->
             <th>
               <div class="th-content">
                 <div class="th-label" onclick="sortTable('height')">身高 <span class="sort-icon">↕</span></div>
-                <input type="text" class="filter-input" data-field="height" placeholder="最小-最大">
               </div>
             </th>
+            <!-- 体重 仅排序无筛选框 -->
             <th>
               <div class="th-content">
                 <div class="th-label" onclick="sortTable('weight')">体重 <span class="sort-icon">↕</span></div>
-                <input type="text" class="filter-input" data-field="weight" placeholder="最小-最大">
               </div>
             </th>
+            <!-- 单价 保留筛选框 -->
             <th>
               <div class="th-content">
                 <div class="th-label" onclick="sortTable('price')">单价 <span class="sort-icon">↕</span></div>
                 <input type="text" class="filter-input" data-field="price" placeholder="最小-最大">
               </div>
             </th>
+            <!-- 胸围 保留筛选框 -->
             <th>
               <div class="th-content">
                 <div>胸围</div>
                 <input type="text" class="filter-input" data-field="bust" placeholder="过滤胸围...">
               </div>
             </th>
+            <!-- 颜值 无筛选框 -->
             <th>
               <div class="th-content">
                 <div>颜值</div>
-                <input type="text" class="filter-input" data-field="avgScoreLook" placeholder="≥ 最小值">
               </div>
             </th>
+            <!-- 胸型 无筛选框 -->
             <th>
               <div class="th-content">
                 <div>胸型</div>
-                <input type="text" class="filter-input" data-field="avgScoreBreast" placeholder="≥ 最小值">
               </div>
             </th>
+            <!-- 腰腹 无筛选框 -->
             <th>
               <div class="th-content">
                 <div>腰腹</div>
-                <input type="text" class="filter-input" data-field="avgScoreWaist" placeholder="≥ 最小值">
               </div>
             </th>
+            <!-- 臀腿 无筛选框 -->
             <th>
               <div class="th-content">
                 <div>臀腿</div>
-                <input type="text" class="filter-input" data-field="avgScoreBodyLower" placeholder="≥ 最小值">
               </div>
             </th>
+            <!-- 配合度 无筛选框 -->
             <th>
               <div class="th-content">
                 <div>配合度</div>
-                <input type="text" class="filter-input" data-field="avgScoreService" placeholder="≥ 最小值">
               </div>
             </th>
-            <th>
-              <div class="th-content">
-                <div>认证状态</div>
-                <select class="filter-input" data-field="isVerified">
-                  <option value="">全部</option>
-                  <option value="true">已认证</option>
-                  <option value="false">未认证</option>
-                </select>
-              </div>
-            </th>
+            <!-- 特色标签 保留筛选框 -->
             <th>
               <div class="th-content">
                 <div>特色标签</div>
@@ -462,7 +432,7 @@
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr><td colspan="18" class="loading-text">正在加载数据……</td></tr>
+          <tr><td colspan="17" class="loading-text">正在加载数据……</td></tr>
         </tbody>
       </table>
     </div>
@@ -511,14 +481,14 @@
       }
 
       try {
-        tbody.innerHTML = '<tr><td colspan="18" class="loading-text">请求远程数据中……</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="17" class="loading-text">请求远程数据中……</td></tr>';
         const response = await fetchWithTimeout(`${API_URL}/api/collections/test_records/records?page=1&perPage=1000&sort=-created_at`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const result = await response.json();
         const records = result.items || [];
 
         if (records.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="18" style="text-align:center;padding:40px;color:#999;">暂无数据</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="17" style="text-align:center;padding:40px;color:#999;">暂无数据</td></tr>';
           return;
         }
 
@@ -601,11 +571,11 @@
         // 自动重试一次（仅首次失败重试）
         if (!hasRetried) {
           hasRetried = true;
-          tbody.innerHTML = '<tr><td colspan="18" class="loading-text">网络波动，正在自动重试……</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="17" class="loading-text">网络波动，正在自动重试……</td></tr>';
           setTimeout(loadData, 1200);
           return;
         }
-        tbody.innerHTML = `<tr><td colspan="18" style="text-align:center;padding:40px;color:#dc3545;">加载数据失败<br><button class="btn reload-btn" onclick="loadData()">点击重新加载</button></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="17" style="text-align:center;padding:40px;color:#dc3545;">加载数据失败<br><button class="btn reload-btn" onclick="loadData()">点击重新加载</button></td></tr>`;
       }
     }
 
@@ -683,15 +653,11 @@
       data.forEach((teacher) => {
         const row = document.createElement('tr');
         
-        const verifiedBadge = teacher.isVerified 
-          ? '<span class="badge badge-green">已认证</span>' 
-          : '<span class="badge badge-gray">未认证</span>';
-        
         const featuresHtml = teacher.features.length > 0 
           ? teacher.features.map(f => `<span class="tag">${f}</span>`).join('') 
           : '-';
         
-        // 列顺序与thead完全对应：综合评分、姓名、好评、中评、差评、ID、年龄、身高、体重、单价、胸围、颜值、胸型、腰腹、臀腿、配合度、认证、标签
+        // 列顺序与thead完全对应，已移除认证状态单元格
         row.innerHTML = `
           <td class="${teacher.avgScore >= 8.5 ? 'score-high' : teacher.avgScore >= 6 ? 'score-medium' : 'score-low'}"><strong>${teacher.avgScore.toFixed(2)}</strong></td>
           <td><strong>${teacher.teacher_name}</strong></td>
@@ -709,7 +675,6 @@
           <td>${teacher.avgScoreWaist.toFixed(1)}</td>
           <td>${teacher.avgScoreBodyLower.toFixed(1)}</td>
           <td>${teacher.avgScoreService.toFixed(1)}</td>
-          <td>${verifiedBadge}</td>
           <td>${featuresHtml}</td>
         `;
         
@@ -723,6 +688,7 @@
     function applyFilters() {
       let filtered = [...currentData];
       
+      // 全局搜索 保留
       if (globalSearchTerm) {
         const term = globalSearchTerm.toLowerCase();
         filtered = filtered.filter(t =>
@@ -732,35 +698,23 @@
         );
       }
 
-      const minOnlyFields = ['goodCount', 'mediumCount', 'badCount',
-                             'avgScoreLook', 'avgScoreBreast', 'avgScoreWaist',
-                             'avgScoreBodyLower', 'avgScoreService'];
-
+      // 仅保留 bust / price / features 三个字段过滤
+      const allowFilterFields = ['price', 'bust', 'features'];
       Object.keys(filters).forEach(field => {
+        if (!allowFilterFields.includes(field)) return;
         const filterValue = filters[field];
         if (!filterValue) return;
 
         filtered = filtered.filter(t => {
           const value = t[field];
           
-          if (field === 'isVerified') {
-            return String(t.isVerified) === filterValue;
-          }
-          
           if (field === 'features') {
             return t.features.some(f => f.toLowerCase().includes(filterValue.toLowerCase()));
-          }
-          
-          if (typeof value === 'string') {
-            return value.toLowerCase().includes(filterValue.toLowerCase());
           }
           
           if (typeof value === 'number') {
             const numFilter = parseFloat(filterValue);
             if (!isNaN(numFilter)) {
-              if (minOnlyFields.includes(field)) {
-                return value >= numFilter;
-              }
               if (filterValue.includes('-')) {
                 const parts = filterValue.split('-').map(p => parseFloat(p.trim()));
                 if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
@@ -775,6 +729,7 @@
         });
       });
 
+      // 排序逻辑完全保留
       if (sortField) {
         filtered.sort((a, b) => {
           let aVal, bVal;
@@ -806,6 +761,7 @@
 
       renderTable(filtered);
 
+      // 筛选高亮
       document.querySelectorAll('.filter-input').forEach(input => {
         const field = input.dataset.field;
         const th = input.closest('th');
@@ -846,11 +802,7 @@
       globalSearchTerm = '';
       
       document.querySelectorAll('.filter-input').forEach(input => {
-        if (input.tagName === 'SELECT') {
-          input.value = '';
-        } else {
-          input.value = '';
-        }
+        input.value = '';
       });
       document.getElementById('globalSearch').value = '';
       
@@ -859,6 +811,7 @@
       applyFilters();
     }
 
+    // 仅绑定保留的三个筛选框事件
     document.querySelectorAll('.filter-input').forEach(input => {
       input.addEventListener('input', function(e) {
         const field = e.target.dataset.field;

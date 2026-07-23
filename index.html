@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>数据表格(源于提交的测评自动计算)</title>
+  <title>老师数据表格</title>
   <style>
     * {
       margin: 0;
@@ -343,24 +343,16 @@
         </div>
       </div>
       <div class="controls">
-        <input type="text" class="search-box" id="globalSearch" placeholder="全局搜索...">
+        <input type="text" class="search-box" id="globalSearch" placeholder="全局搜索：姓名/ID/标签">
         <button class="btn btn-clear" onclick="clearAllFilters()">🔄 清除全部筛选</button>
       </div>
     </div>
 
-    <!-- 顶部独立筛选栏：4个筛选全部放这里 -->
+    <!-- 顶部独立筛选栏：仅保留胸围筛选 -->
     <div class="filter-bar">
       <div class="filter-item">
-        <label>胸围：</label>
+        <label>胸围区间：</label>
         <input type="text" class="filter-input-top" data-field="bust" placeholder="例如 70-90">
-      </div>
-      <div class="filter-item">
-        <label>单价：</label>
-        <input type="text" class="filter-input-top" data-field="price" placeholder="最小-最大">
-      </div>
-      <div class="filter-item">
-        <label>特色标签：</label>
-        <input type="text" class="filter-input-top" data-field="features" placeholder="输入标签筛选">
       </div>
     </div>
 
@@ -430,13 +422,13 @@
                 <div class="th-label" onclick="sortTable('weight')">体重 <span class="sort-icon">↕</span></div>
               </div>
             </th>
-            <!-- 单价 仅排序，筛选框移至顶部 -->
+            <!-- 单价 仅排序，无独立筛选框 -->
             <th>
               <div class="th-content">
                 <div class="th-label" onclick="sortTable('price')">单价 <span class="sort-icon">↕</span></div>
               </div>
             </th>
-            <!-- 胸围 保留筛选框 -->
+            <!-- 胸围 无筛选框 -->
             <th>
               <div class="th-content">
                 <div>胸围</div>
@@ -750,18 +742,19 @@
     function applyFilters() {
       let filtered = [...currentData];
       
-      // 全局搜索 保留
+      // 全局搜索 新增匹配特色标签数组
       if (globalSearchTerm) {
         const term = globalSearchTerm.toLowerCase();
         filtered = filtered.filter(t =>
           t.teacher_name.toLowerCase().includes(term) ||
           t.teacher_id.toLowerCase().includes(term) ||
-          t.features.some(f => f.toLowerCase().includes(term))
+          // 遍历标签数组，任意标签包含关键词即匹配
+          t.features.some(tag => tag.toLowerCase().includes(term))
         );
       }
 
-      // 仅允许 bust / price / features 三个字段过滤
-      const allowFilterFields = ['price', 'bust', 'features'];
+      // 仅允许 bust 胸围字段过滤
+      const allowFilterFields = ['bust'];
       Object.keys(filters).forEach(field => {
         if (!allowFilterFields.includes(field)) return;
         const filterValue = filters[field];
@@ -769,10 +762,6 @@
 
         filtered = filtered.filter(t => {
           const value = t[field];
-          
-          if (field === 'features') {
-            return t.features.some(f => f.toLowerCase().includes(filterValue.toLowerCase()));
-          }
           
           if (typeof value === 'number') {
             const numFilter = parseFloat(filterValue);
@@ -860,7 +849,7 @@
       applyFilters();
     }
 
-    // 绑定顶部筛选框事件
+    // 仅绑定胸围筛选框事件
     document.querySelectorAll('.filter-input-top').forEach(input => {
       input.addEventListener('input', function(e) {
         const field = e.target.dataset.field;

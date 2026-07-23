@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>数据表格</title>
+  <title>老师数据表格</title>
   <style>
     * {
       margin: 0;
@@ -466,7 +466,6 @@
         </tbody>
       </table>
     </div>
-    <!-- 删除原来底部的stats区块 -->
   </div>
   <script>
     // Cloudflare Workers API 配置
@@ -502,8 +501,10 @@
         const cachedData = localStorage.getItem(CACHE_KEY);
         if (cachedData) {
           currentData = JSON.parse(cachedData);
+          // 修复：读取缓存后强制按综合评分降序重排，解决缓存乱序
+          currentData.sort((a, b) => b.avgScore - a.avgScore);
           renderTable(currentData);
-          // 后台静默刷新最新数据（不阻塞页面展示）
+          // 后台静默刷新最新数据
           remoteRefresh();
           return;
         }
@@ -670,6 +671,8 @@
         }));
         localStorage.setItem(CACHE_KEY, JSON.stringify(newData));
         localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+        // 修复：后台刷新完最新数据，立即重新渲染表格更新页面
+        renderTable(newData);
       }catch(e){}
     }
 

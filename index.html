@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>老师数据表格</title>
+  <title>数据表格(源于提交的测评自动计算)</title>
   <style>
     * {
       margin: 0;
@@ -85,6 +85,33 @@
       background: #5a6268;
     }
 
+    /* 顶部筛选区域 */
+    .filter-bar {
+      padding: 15px 30px;
+      background: #f0f2f5;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .filter-item label {
+      font-size: 14px;
+      color: #333;
+      white-space: nowrap;
+    }
+    .filter-input-top {
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 13px;
+      width: 140px;
+    }
+
     /* 统计栏移到表格上方 */
     .stats {
       padding: 15px 30px;
@@ -104,6 +131,21 @@
     .table-wrapper {
       overflow-x: auto;
       max-height: 70vh;
+      position: relative;
+    }
+    /* 移动端向右滑动提示 */
+    .scroll-tip {
+      display: none;
+      text-align: center;
+      padding: 8px;
+      color: #888;
+      font-size: 13px;
+      background: #fff8e1;
+    }
+    @media (max-width:768px) {
+      .scroll-tip {
+        display: block;
+      }
     }
     
     table {
@@ -145,20 +187,6 @@
     
     .th-label:hover {
       color: #667eea;
-    }
-    
-    .filter-input {
-      width: 100%;
-      padding: 4px 6px;
-      border: 1px solid #ddd;
-      border-radius: 3px;
-      font-size: 11px;
-      outline: none;
-    }
-    
-    .filter-input:focus {
-      border-color: #667eea;
-      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
     }
     
     td {
@@ -215,9 +243,6 @@
       color: #667eea;
       font-weight: 600;
     }
-    .active-filter {
-      background: #fff3cd !important;
-    }
     .loading-text{
       text-align:center;padding:40px;color:#666;
     }
@@ -268,6 +293,15 @@
         gap: 8px;
         width: 100%;
       }
+      .filter-bar {
+        padding: 12px 15px;
+      }
+      .filter-item {
+        width: 100%;
+      }
+      .filter-input-top {
+        width: 100%;
+      }
       .table-wrapper {
         max-height: 60vh;
       }
@@ -310,7 +344,23 @@
       </div>
       <div class="controls">
         <input type="text" class="search-box" id="globalSearch" placeholder="全局搜索...">
-        <button class="btn btn-clear" onclick="clearAllFilters()">🔄 清除筛选</button>
+        <button class="btn btn-clear" onclick="clearAllFilters()">🔄 清除全部筛选</button>
+      </div>
+    </div>
+
+    <!-- 顶部独立筛选栏：4个筛选全部放这里 -->
+    <div class="filter-bar">
+      <div class="filter-item">
+        <label>胸围：</label>
+        <input type="text" class="filter-input-top" data-field="bust" placeholder="例如 70-90">
+      </div>
+      <div class="filter-item">
+        <label>单价：</label>
+        <input type="text" class="filter-input-top" data-field="price" placeholder="最小-最大">
+      </div>
+      <div class="filter-item">
+        <label>特色标签：</label>
+        <input type="text" class="filter-input-top" data-field="features" placeholder="输入标签筛选">
       </div>
     </div>
 
@@ -320,6 +370,8 @@
       <span>已认证 <strong id="verifiedCount">0</strong> 位</span>
     </div>
     
+    <!-- 移动端向右滑动提示 -->
+    <div class="scroll-tip">← 左右滑动表格查看更多列 →</div>
     <div class="table-wrapper">
       <table id="dataTable">
         <thead>
@@ -378,18 +430,16 @@
                 <div class="th-label" onclick="sortTable('weight')">体重 <span class="sort-icon">↕</span></div>
               </div>
             </th>
-            <!-- 单价 保留筛选框 -->
+            <!-- 单价 仅排序，筛选框移至顶部 -->
             <th>
               <div class="th-content">
                 <div class="th-label" onclick="sortTable('price')">单价 <span class="sort-icon">↕</span></div>
-                <input type="text" class="filter-input" data-field="price" placeholder="最小-最大">
               </div>
             </th>
             <!-- 胸围 保留筛选框 -->
             <th>
               <div class="th-content">
                 <div>胸围</div>
-                <input type="text" class="filter-input" data-field="bust" placeholder="过滤胸围...">
               </div>
             </th>
             <!-- 颜值 无筛选框 -->
@@ -422,11 +472,10 @@
                 <div>配合度</div>
               </div>
             </th>
-            <!-- 特色标签 保留筛选框 -->
+            <!-- 特色标签 无筛选框 -->
             <th>
               <div class="th-content">
                 <div>特色标签</div>
-                <input type="text" class="filter-input" data-field="features" placeholder="过滤标签...">
               </div>
             </th>
           </tr>
@@ -516,6 +565,7 @@
               totalScoreWaist: 0,
               totalScoreBodyLower: 0,
               totalScoreService: 0,
+              hasSuperReview: false, // 标记是否存在is_super_soldier_review=1的测评
             };
           }
 
@@ -527,6 +577,11 @@
           teacherStats[teacherId].totalScoreWaist += Number(record.score_waist || 0);
           teacherStats[teacherId].totalScoreBodyLower += Number(record.score_body_lower || 0);
           teacherStats[teacherId].totalScoreService += Number(record.score_service || 0);
+
+          // 判断本条测评是否为超级测评
+          if (Number(record.is_super_soldier_review || 0) === 1) {
+            teacherStats[teacherId].hasSuperReview = true;
+          }
 
           if (score >= 8.5) {
             teacherStats[teacherId].goodCount += 1;
@@ -554,7 +609,8 @@
           avgScoreWaist: stats.totalScoreWaist / stats.count,
           avgScoreBodyLower: stats.totalScoreBodyLower / stats.count,
           avgScoreService: stats.totalScoreService / stats.count,
-          isVerified: new Set(records.filter(r => r.teacher_id === stats.teacher_id).map(r => r.evaluator)).size > 5,
+          // 认证判定：存在超级测评 OR 测评总数大于5
+          isVerified: stats.hasSuperReview || stats.count > 5,
         }));
 
         sortField = 'avgScore';
@@ -610,6 +666,7 @@
               totalScoreWaist: 0,
               totalScoreBodyLower: 0,
               totalScoreService: 0,
+              hasSuperReview: false,
             };
           }
           const score = Number(record.final_score || 0);
@@ -620,6 +677,10 @@
           teacherStats[teacherId].totalScoreWaist += Number(record.score_waist || 0);
           teacherStats[teacherId].totalScoreBodyLower += Number(record.score_body_lower || 0);
           teacherStats[teacherId].totalScoreService += Number(record.score_service || 0);
+          // 超级测评标记
+          if (Number(record.is_super_soldier_review || 0) === 1) {
+            teacherStats[teacherId].hasSuperReview = true;
+          }
           if (score >= 8.5) teacherStats[teacherId].goodCount +=1;
           else if(score>=6) teacherStats[teacherId].mediumCount +=1;
           else teacherStats[teacherId].badCount +=1;
@@ -637,7 +698,7 @@
           avgScoreWaist: stats.totalScoreWaist / stats.count,
           avgScoreBodyLower: stats.totalScoreBodyLower / stats.count,
           avgScoreService: stats.totalScoreService / stats.count,
-          isVerified: new Set(records.filter(r => r.teacher_id === stats.teacher_id).map(r => r.evaluator)).size > 5,
+          isVerified: stats.hasSuperReview || stats.count > 5,
         }));
         localStorage.setItem(CACHE_KEY, JSON.stringify(newData));
         localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
@@ -682,6 +743,7 @@
       });
       
       document.getElementById('totalCount').textContent = data.length;
+      // 统计已认证人数：isVerified=true 的老师数量
       document.getElementById('verifiedCount').textContent = data.filter(t => t.isVerified).length;
     }
 
@@ -698,7 +760,7 @@
         );
       }
 
-      // 仅保留 bust / price / features 三个字段过滤
+      // 仅允许 bust / price / features 三个字段过滤
       const allowFilterFields = ['price', 'bust', 'features'];
       Object.keys(filters).forEach(field => {
         if (!allowFilterFields.includes(field)) return;
@@ -760,17 +822,6 @@
       }
 
       renderTable(filtered);
-
-      // 筛选高亮
-      document.querySelectorAll('.filter-input').forEach(input => {
-        const field = input.dataset.field;
-        const th = input.closest('th');
-        if (filters[field]) {
-          th.classList.add('active-filter');
-        } else {
-          th.classList.remove('active-filter');
-        }
-      });
     }
 
     function sortTable(field) {
@@ -801,18 +852,16 @@
       filters = {};
       globalSearchTerm = '';
       
-      document.querySelectorAll('.filter-input').forEach(input => {
+      document.querySelectorAll('.filter-input-top').forEach(input => {
         input.value = '';
       });
       document.getElementById('globalSearch').value = '';
       
-      document.querySelectorAll('th').forEach(th => th.classList.remove('active-filter'));
-      
       applyFilters();
     }
 
-    // 仅绑定保留的三个筛选框事件
-    document.querySelectorAll('.filter-input').forEach(input => {
+    // 绑定顶部筛选框事件
+    document.querySelectorAll('.filter-input-top').forEach(input => {
       input.addEventListener('input', function(e) {
         const field = e.target.dataset.field;
         const value = e.target.value.trim();

@@ -473,10 +473,10 @@
                 <div>臀腿</div>
               </div>
             </th>
-            <!-- 配合度 无筛选框 -->
+            <!-- 服务 无筛选框 -->
             <th>
               <div class="th-content">
-                <div>配合度</div>
+                <div>服务</div>
               </div>
             </th>
           </tr>
@@ -723,7 +723,7 @@
         localStorage.setItem(CACHE_RAW_KEY, JSON.stringify(rawAllData));
         localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
         // 重新排序渲染
-        currentData = [...rawAllData].sort(sortCompareFunc);
+        currentData = [...rawAllData].sort(sortCompareFunc);https://bycby88.github.io/ZSFK/
         renderTable(currentData);
       }catch(e){}
     }

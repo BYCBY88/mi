@@ -720,22 +720,18 @@
   <script>
     // Cloudflare Workers API 配置
     const API_URL = 'https://api.byg88.biz';
-    // 【核心拆分】rawAllData：原始全量数据（仅存入缓存，不排序不筛选）
     let rawAllData = [];
-    // currentData：仅用于渲染的临时数组，不写入缓存
     let currentData = [];
     let sortField = 'avgScore';
     let sortDirection = 'desc';
-    let filters = {}; // 列筛选条件
+    let filters = {};
     let globalSearchTerm = '';
     let hasRetried = false;
 
-    // 缓存key：只存储原始未排序数据
     const CACHE_RAW_KEY = 'teacher_raw_all_data';
     const CACHE_TIME_KEY = 'teacher_table_cache_time_cf';
-    const CACHE_DURATION = 30 * 60 * 1000; // 30分钟
+    const CACHE_DURATION = 30 * 60 * 1000;
 
-    // 带超时的fetch封装
     function fetchWithTimeout(url, timeout = 8000) {
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), timeout);
@@ -743,44 +739,38 @@
         .finally(() => clearTimeout(id));
     }
 
-    // 统一通用排序对比函数（所有排序复用，基于全局sortField/sortDirection）
     function sortCompareFunc(a, b) {
       let valA = a[sortField];
       let valB = b[sortField];
-      // 判断是否数字类型
       const numA = parseFloat(valA);
       const numB = parseFloat(valB);
       if (!isNaN(numA) && !isNaN(numB)) {
         valA = numA;
         valB = numB;
       }
-      // 升降序判断
       if (valA > valB) return sortDirection === 'desc' ? -1 : 1;
       if (valA < valB) return sortDirection === 'desc' ? 1 : -1;
       return 0;
     }
 
-    // 从 Cloudflare Workers API 加载数据
     async function loadData() {
       const tbody = document.getElementById('tableBody');
       const now = Date.now();
       const cachedRaw = localStorage.getItem(CACHE_RAW_KEY);
       const cacheTime = localStorage.getItem(CACHE_TIME_KEY);
 
-      // 优先读取缓存原始数据
       if (cachedRaw && cacheTime && (now - parseInt(cacheTime)) < CACHE_DURATION) {
         rawAllData = JSON.parse(cachedRaw);
-        // 关键：读取原始数据后立刻强制重排，消除缓存旧顺序
         currentData = [...rawAllData].sort(sortCompareFunc);
         renderTable(currentData);
-        // 后台静默刷新最新接口数据
         remoteRefresh();
         return;
       }
 
       try {
         tbody.innerHTML = '<tr><td colspan="16" class="loading-text">请求远程数据中……</td></tr>';
-        const response = await fetchWithTimeout(`${API_URL}/api/collections/test_records/records?page=1&perPage=1000&sort=-created_at`);
+        // 直接读取后端预聚合 teacher_summary，去掉前端test_records聚合逻辑
+        const response = await fetchWithTimeout(`${API_URL}/api/collections/teacher_summary/records?page=1&perPage=2000`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const result = await response.json();
         const records = result.items || [];
@@ -790,81 +780,35 @@
           return;
         }
 
-        // 按老师ID分组统计
-        const teacherStats = {};
-        for (const record of records) {
-          const teacherId = record.teacher_id;
-          if (!teacherStats[teacherId]) {
-            teacherStats[teacherId] = {
-              teacher_id: teacherId,
-              teacher_name: record.teacher_name,
-              age: record.age,
-              height: record.height,
-              weight: record.weight,
-              price: record.price,
-              bust: record.bust,
-              totalScore: 0,
-              count: 0,
-              goodCount: 0,
-              mediumCount: 0,
-              badCount: 0,
-              features: [],
-              totalScoreLook: 0,
-              totalScoreBreast: 0,
-              totalScoreWaist: 0,
-              totalScoreBodyLower: 0,
-              totalScoreService: 0,
-            };
-          }
-
-          const score = Number(record.final_score || 0);
-          teacherStats[teacherId].totalScore += score;
-          teacherStats[teacherId].count += 1;
-          teacherStats[teacherId].totalScoreLook += Number(record.score_look || 0);
-          teacherStats[teacherId].totalScoreBreast += Number(record.score_breast || 0);
-          teacherStats[teacherId].totalScoreWaist += Number(record.score_waist || 0);
-          teacherStats[teacherId].totalScoreBodyLower += Number(record.score_body_lower || 0);
-          teacherStats[teacherId].totalScoreService += Number(record.score_service || 0);
-
-          if (score >= 8.5) {
-            teacherStats[teacherId].goodCount += 1;
-          } else if (score >= 6) {
-            teacherStats[teacherId].mediumCount += 1;
-          } else {
-            teacherStats[teacherId].badCount += 1;
-          }
-
-          if (record.features && Array.isArray(record.features)) {
-            record.features.forEach(feature => {
-              if (!teacherStats[teacherId].features.includes(feature)) {
-                teacherStats[teacherId].features.push(feature);
-              }
-            });
-          }
-        }
-
-        // 转换数组、计算平均分，赋值给原始数据源
-        rawAllData = Object.values(teacherStats).map(stats => ({
-          ...stats,
-          avgScore: stats.totalScore / stats.count,
-          avgScoreLook: stats.totalScoreLook / stats.count,
-          avgScoreBreast: stats.totalScoreBreast / stats.count,
-          avgScoreWaist: stats.totalScoreWaist / stats.count,
-          avgScoreBodyLower: stats.totalScoreBodyLower / stats.count,
-          avgScoreService: stats.totalScoreService / stats.count,
+        // =========修复：读取后端下划线原始字段，映射前端驼峰变量=========
+        rawAllData = records.map(r=>({
+          teacher_id: r.teacher_id,
+          teacher_name: r.teacher_name,
+          name: r.teacher_name,
+          age: r.age,
+          height: r.height,
+          weight: r.weight,
+          price: r.price,
+          bust: r.bust,
+          goodCount: r.good_count,
+          mediumCount: r.medium_count,
+          badCount: r.bad_count,
+          avgScore: Number(r.avg_score||0),
+          avgScoreLook: Number(r.avg_score_look||0),
+          avgScoreBreast: Number(r.avg_score_breast||0),
+          avgScoreWaist: Number(r.avg_score_waist||0),
+          avgScoreBodyLower: Number(r.avg_score_body_lower||0),
+          avgScoreService: Number(r.avg_score_service||0),
         }));
 
-        // 缓存仅存储原始未排序数据
         localStorage.setItem(CACHE_RAW_KEY, JSON.stringify(rawAllData));
         localStorage.setItem(CACHE_TIME_KEY, now.toString());
 
-        // 原始数据复制一份，执行默认排序作为渲染数组
         currentData = [...rawAllData].sort(sortCompareFunc);
         renderTable(currentData);
 
       } catch (error) {
         console.error('加载异常', error);
-        // 自动重试一次（仅首次失败重试）
         if (!hasRetried) {
           hasRetried = true;
           tbody.innerHTML = '<tr><td colspan="16" class="loading-text">网络波动，正在自动重试……</td></tr>';
@@ -875,70 +819,39 @@
       }
     }
 
-    // 后台静默刷新远程最新数据（缓存存在时调用）
+    // 后台静默刷新，同样读取summary表
     async function remoteRefresh() {
       try {
-        const response = await fetchWithTimeout(`${API_URL}/api/collections/test_records/records?page=1&perPage=1000&sort=-created_at`);
+        const response = await fetchWithTimeout(`${API_URL}/api/collections/teacher_summary/records?page=1&perPage=2000`);
         if (!response.ok) return;
         const result = await response.json();
         const records = result.items || [];
         if(records.length === 0) return;
-        const teacherStats = {};
-        for (const record of records) {
-          const teacherId = record.teacher_id;
-          if (!teacherStats[teacherId]) {
-            teacherStats[teacherId] = {
-              teacher_id: teacherId,
-              teacher_name: record.teacher_name,
-              age: record.age,
-              height: record.height,
-              weight: record.weight,
-              price: record.price,
-              bust: record.bust,
-              totalScore: 0,
-              count: 0,
-              goodCount: 0,
-              mediumCount: 0,
-              badCount: 0,
-              features: [],
-              totalScoreLook: 0,
-              totalScoreBreast: 0,
-              totalScoreWaist: 0,
-              totalScoreBodyLower: 0,
-              totalScoreService: 0,
-            };
-          }
-          const score = Number(record.final_score || 0);
-          teacherStats[teacherId].totalScore += score;
-          teacherStats[teacherId].count += 1;
-          teacherStats[teacherId].totalScoreLook += Number(record.score_look || 0);
-          teacherStats[teacherId].totalScoreBreast += Number(record.score_breast || 0);
-          teacherStats[teacherId].totalScoreWaist += Number(record.score_waist || 0);
-          teacherStats[teacherId].totalScoreBodyLower += Number(record.score_body_lower || 0);
-          teacherStats[teacherId].totalScoreService += Number(record.score_service || 0);
-          if (score >= 8.5) teacherStats[teacherId].goodCount +=1;
-          else if(score>=6) teacherStats[teacherId].mediumCount +=1;
-          else teacherStats[teacherId].badCount +=1;
-          if(record.features && Array.isArray(record.features)){
-            record.features.forEach(f=>{
-              if(!teacherStats[teacherId].features.includes(f)) teacherStats[teacherId].features.push(f);
-            })
-          }
-        }
-        const newRaw = Object.values(teacherStats).map(stats => ({
-          ...stats,
-          avgScore: stats.totalScore / stats.count,
-          avgScoreLook: stats.totalScoreLook / stats.count,
-          avgScoreBreast: stats.totalScoreBreast / stats.count,
-          avgScoreWaist: stats.totalScoreWaist / stats.count,
-          avgScoreBodyLower: stats.totalScoreBodyLower / stats.count,
-          avgScoreService: stats.totalScoreService / stats.count,
+
+        // =========修复：读取后端下划线原始字段=========
+        const newRaw = records.map(r=>({
+          teacher_id: r.teacher_id,
+          teacher_name: r.teacher_name,
+          name: r.teacher_name,
+          age: r.age,
+          height: r.height,
+          weight: r.weight,
+          price: r.price,
+          bust: r.bust,
+          goodCount: r.good_count,
+          mediumCount: r.medium_count,
+          badCount: r.bad_count,
+          avgScore: Number(r.avg_score||0),
+          avgScoreLook: Number(r.avg_score_look||0),
+          avgScoreBreast: Number(r.avg_score_breast||0),
+          avgScoreWaist: Number(r.avg_score_waist||0),
+          avgScoreBodyLower: Number(r.avg_score_body_lower||0),
+          avgScoreService: Number(r.avg_score_service||0),
         }));
-        // 更新缓存原始数据
+
         rawAllData = newRaw;
         localStorage.setItem(CACHE_RAW_KEY, JSON.stringify(rawAllData));
         localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
-        // 重新排序渲染
         currentData = [...rawAllData].sort(sortCompareFunc);
         renderTable(currentData);
       }catch(e){}
@@ -951,7 +864,6 @@
       data.forEach((teacher) => {
         const row = document.createElement('tr');
         
-        // 列顺序和HTMLthead完全对应
         row.innerHTML = `
           <td class="${teacher.avgScore >= 8.5 ? 'score-high' : teacher.avgScore >= 6 ? 'score-medium' : 'score-low'}"><strong>${teacher.avgScore.toFixed(2)}</strong></td>
           <td><strong>${teacher.teacher_name}</strong></td>
@@ -974,17 +886,13 @@
         tbody.appendChild(row);
       });
       
-      // 仅保留总人数统计
       document.getElementById('totalCount').textContent = data.length;
     }
 
-    // ========== 核心筛选逻辑（Excel风格） ==========
     function applyFilters() {
-      // 第一步：永远从原始数据复制，执行全局排序
       let sortedBase = [...rawAllData].sort(sortCompareFunc);
       let filtered = [...sortedBase];
       
-      // 1. 全局搜索：仅保留姓名、老师ID匹配
       if (globalSearchTerm) {
         const term = globalSearchTerm.toLowerCase();
         filtered = filtered.filter(t =>
@@ -993,14 +901,12 @@
         );
       }
 
-      // 2. 列筛选：遍历所有筛选条件
       Object.keys(filters).forEach(field => {
         const filterValue = filters[field];
         if (!filterValue) return;
 
         filtered = filtered.filter(t => {
           const value = t[field];
-          // 数字区间匹配（如 3-10）
           if (typeof value === 'number') {
             const numFilter = parseFloat(filterValue);
             if (!isNaN(numFilter)) {
@@ -1013,31 +919,25 @@
               return value === numFilter;
             }
           }
-          // 文本模糊匹配
           return String(value).toLowerCase().includes(filterValue.toLowerCase());
         });
       });
 
       currentData = filtered;
       renderTable(filtered);
-      // 更新筛选按钮激活状态
       updateFilterButtonState();
     }
 
-    // 切换筛选面板显示/隐藏
     function toggleFilterPanel(field) {
-      // 先关闭所有其他筛选面板
       document.querySelectorAll('.filter-panel').forEach(panel => {
         if (panel.id !== `filter-panel-${field}`) {
           panel.classList.remove('show');
         }
       });
-      // 切换当前面板
       const panel = document.getElementById(`filter-panel-${field}`);
       panel.classList.toggle('show');
     }
 
-    // 应用列筛选
     function applyColumnFilter(field) {
       const panel = document.getElementById(`filter-panel-${field}`);
       const input = panel.querySelector('input');
@@ -1053,7 +953,6 @@
       panel.classList.remove('show');
     }
 
-    // 清除单列筛选
     function clearFilter(field) {
       delete filters[field];
       const panel = document.getElementById(`filter-panel-${field}`);
@@ -1064,7 +963,6 @@
       panel.classList.remove('show');
     }
 
-    // 更新筛选按钮激活状态（有筛选条件时高亮）
     function updateFilterButtonState() {
       document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
@@ -1075,7 +973,6 @@
       });
     }
 
-    // 排序功能（完全保留原有逻辑）
     function sortTable(field) {
       if (sortField === field) {
         sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
@@ -1100,7 +997,6 @@
       applyFilters();
     }
 
-    // 清除全部筛选（全局搜索+所有列筛选）
     function clearAllFilters() {
       filters = {};
       globalSearchTerm = '';
@@ -1113,13 +1009,11 @@
       applyFilters();
     }
 
-    // 绑定全局搜索事件
     document.getElementById('globalSearch').addEventListener('input', function(e) {
       globalSearchTerm = e.target.value.trim();
       applyFilters();
     });
 
-    // 点击外部关闭筛选面板
     document.addEventListener('click', function(e) {
       if (!e.target.closest('.th-content') && !e.target.closest('.filter-panel')) {
         document.querySelectorAll('.filter-panel').forEach(panel => {
@@ -1128,12 +1022,10 @@
       }
     });
 
-    // 页面加载完成初始化
     document.addEventListener('DOMContentLoaded', ()=>{
       loadData();
     });
 
-    // 浏览器后退缓存页面强制重排
     window.addEventListener('pageshow', (e) => {
       if (e.persisted && rawAllData.length > 0) {
         currentData = [...rawAllData].sort(sortCompareFunc);

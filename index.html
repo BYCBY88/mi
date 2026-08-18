@@ -1,1037 +1,941 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <title>数据表格(Excel风格)</title>
-  <style>
-    /* 全局重置 */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: #f5f5f5;
-      padding: 20px;
-    }
-    
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-    
-    .header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 16px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .header h1 {
-      font-size: 20px;
-      font-weight: 600;
-    }
-    
-    .header p {
-      font-size: 12px !important;
-      margin-top: 6px !important;
-    }
-    
-    /* 搜索+按钮布局极致紧凑化 */
-    .controls {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-    
-    .search-box {
-      padding: 6px 10px;
-      border: none;
-      border-radius: 4px;
-      font-size: 12px;
-      width: 160px;
-    }
-    
-    .btn {
-      padding: 6px 12px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-    
-    .btn-primary {
-      background: white;
-      color: #667eea;
-      font-weight: 500;
-    }
-    
-    .btn-primary:hover {
-      background: #f0f0f0;
-    }
-    
-    .btn-clear {
-      background: #6c757d;
-      color: white;
-    }
-    
-    .btn-clear:hover {
-      background: #5a6268;
-    }
-
-    /* 统计栏 */
-    .stats {
-      padding: 12px 24px;
-      background: #f8f9fa;
-      border-bottom: 1px solid #e0e0e0;
-      display: flex;
-      gap: 30px;
-      font-size: 12px;
-      color: #666;
-      align-items: center;
-    }
-    
-    .stats strong {
-      color: #333;
-    }
-    
-    /* 表格外层容器 */
-    .table-wrapper {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      max-height: 70vh;
-      position: relative;
-    }
-    
-    /* 移动端滑动提示 */
-    .scroll-tip {
-      display: none;
-      text-align: center;
-      padding: 8px;
-      color: #888;
-      font-size: 12px;
-      background: #fff8e1;
-    }
-    @media (max-width:768px) {
-      .scroll-tip {
-        display: block;
-      }
-    }
-    
-    /* ========== Excel核心样式 + 字体缩小优化 ========== */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      /* 全表格字体缩小，展示更多内容 */
-      font-size: 12px;
-      /* 列宽自适应内容，不会自动拓宽 */
-      table-layout: auto;
-      /* 表格宽度由内容决定，同时不会小于容器宽度 */
-      width: fit-content;
-      min-width: 100%;
-      /* Excel经典全边框 */
-      border: 1px solid #999;
-    }
-    
-    /* 表头固定（Excel冻结首行） */
-    thead {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    
-    /* Excel表头样式 */
-    th {
-      background: #D3EAFD; /* Excel经典浅蓝表头 */
-      padding: 5px 3px; /* 缩小内边距，更紧凑 */
-      text-align: left;
-      font-weight: 600;
-      color: #000;
-      border: 1px solid #999; /* Excel单元格边框 */
-      white-space: nowrap;
-      vertical-align: top;
-      /* 列宽自适应，最小宽度紧凑化 */
-      width: auto;
-      min-width: 54px;
-      max-width: 110px;
-      position: relative;
-    }
-    
-    /* 老师ID列单独加宽，确保ID完整显示 */
-    th[data-field="teacher_id"] {
-      min-width: 90px !important;
-      max-width: 120px !important;
-    }
-    td[data-field="teacher_id"] {
-      min-width: 90px !important;
-      max-width: 120px !important;
-    }
-    
-    /* Excel表头内容布局：标签+排序箭头+筛选按钮 */
-    .th-content {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 4px;
-      position: relative;
-      width: 100%;
-    }
-    
-    /* Excel排序标签 */
-    .th-label {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-      user-select: none;
-      flex: 1;
-    }
-    
-    .th-label:hover {
-      color: #000;
-    }
-    
-    /* Excel排序箭头 */
-    .sort-icon {
-      display: inline-block;
-      font-size: 11px;
-      opacity: 0.3;
-      transition: all 0.2s;
-    }
-    .th-label:hover .sort-icon {
-      opacity: 0.7;
-    }
-    .sort-active .sort-icon {
-      opacity: 1;
-      color: #000;
-      font-weight: bold;
-    }
-    .sort-active {
-      color: #000;
-      font-weight: 600;
-    }
-    
-    /* Excel筛选按钮（下拉箭头） */
-    .filter-btn {
-      width: 14px;
-      height: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 9px;
-      color: #666;
-      border-radius: 2px;
-      transition: background 0.2s;
-    }
-    .filter-btn:hover {
-      background: #fff;
-      border: 1px solid #ccc;
-    }
-    /* 筛选激活状态（有筛选条件时高亮） */
-    .filter-btn.active {
-      background: #FFC000;
-      color: #000;
-    }
-    
-    /* Excel单元格样式 */
-    td {
-      padding: 4px 3px; /* 缩小单元格内边距，更紧凑 */
-      border: 1px solid #999; /* Excel单元格边框 */
-      white-space: nowrap;
-      /* 列宽与表头一致，自适应内容 */
-      width: auto;
-      min-width: 54px;
-      max-width: 110px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      background: #fff;
-    }
-    
-    /* Excel行hover效果 */
-    tbody tr:hover td {
-      background: #FFF2CC; /* Excel hover浅黄 */
-    }
-    
-    /* Excel隔行斑马纹 */
-    tbody tr:nth-child(even) td {
-      background: #F8F8F8;
-    }
-    tbody tr:nth-child(even):hover td {
-      background: #FFF2CC;
-    }
-    
-    /* 评分颜色保留 */
-    .score-high {
-      color: #28a745;
-      font-weight: 600;
-    }
-    .score-medium {
-      color: #ffc107;
-      font-weight: 600;
-    }
-    .score-low {
-      color: #dc3545;
-      font-weight: 600;
-    }
-    
-    /* 加载状态 */
-    .loading-text{
-      text-align:center;padding:40px;color:#666;
-    }
-    .reload-btn{
-      margin-top:12px;padding:6px 16px;
-    }
-    
-    /* ========== Excel筛选面板 ========== */
-    .filter-panel {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      background: #fff;
-      border: 1px solid #999;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-      padding: 8px;
-      z-index: 100;
-      min-width: 200px;
-      display: none;
-    }
-    .filter-panel.show {
-      display: block;
-    }
-    .filter-panel input {
-      width: 100%;
-      padding: 6px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      margin-bottom: 8px;
-      font-size: 12px;
-    }
-    .filter-panel .filter-actions {
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-    }
-    .filter-panel button {
-      padding: 4px 12px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: #f0f0f0;
-      cursor: pointer;
-      font-size: 12px;
-    }
-    .filter-panel button:hover {
-      background: #e0e0e0;
-    }
-    .filter-panel .btn-apply {
-      background: #0078D4;
-      color: #fff;
-      border-color: #0078D4;
-    }
-    .filter-panel .btn-apply:hover {
-      background: #005A9E;
-    }
-    
-    /* ========== 移动端极致精简适配（字体9px） ========== */
-    @media (max-width: 768px) {
-      body {
-        padding: 8px;
-      }
-      .container {
-        border-radius: 4px;
-      }
-      .header {
-        flex-direction: column;
-        gap: 10px;
-        padding: 12px 15px;
-        align-items: flex-start;
-      }
-      .header h1 {
-        font-size: 16px;
-      }
-      .header > div > div {
-        flex-wrap: wrap;
-      }
-      .header a {
-        padding: 5px 10px !important;
-        font-size: 11px !important;
-      }
-      /* 移动端搜索+按钮一行紧凑布局 */
-      .controls {
-        width: 100%;
-        flex-direction: row;
-        gap: 6px;
-      }
-      .search-box {
-        flex: 1;
-        width: auto;
-        padding: 5px 8px;
-        font-size: 11px;
-      }
-      .btn {
-        flex: 0 0 auto;
-        margin-left: 0 !important;
-        padding: 5px 10px;
-        font-size: 11px;
-      }
-      .table-wrapper {
-        max-height: 60vh;
-      }
-      /* 核心：移动端表格字体缩小到9px */
-      table {
-        font-size: 9px;
-      }
-      /* 表头、单元格内边距极致缩小 */
-      th, td {
-        padding: 2px 1px;
-        min-width: 40px;
-        max-width: 70px;
-      }
-      /* 移动端ID列保留足够宽度，确保ID完整显示 */
-      th[data-field="teacher_id"] {
-        min-width: 70px !important;
-      }
-      td[data-field="teacher_id"] {
-        min-width: 70px !important;
-        font-size: 10px !important; /* ID列单独稍微放大，确保可读性 */
-      }
-      /* 排序箭头、筛选按钮字号同步缩小 */
-      .sort-icon {
-        font-size: 9px;
-      }
-      .filter-btn {
-        width: 12px;
-        height: 12px;
-        font-size: 8px;
-      }
-      /* 统计栏、提示文字字号缩小 */
-      .stats {
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 8px 15px;
-        font-size: 11px;
-      }
-      .scroll-tip {
-        font-size: 11px;
-        padding: 6px;
-      }
-      /* 移动端筛选面板适配 */
-      .filter-panel {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 90%;
-        max-width: 280px;
-        padding: 6px;
-      }
-      .filter-panel input {
-        padding: 5px;
-        font-size: 11px;
-        margin-bottom: 6px;
-      }
-      .filter-panel button {
-        padding: 3px 10px;
-        font-size: 11px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>老师测评</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        .header-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+        .header h1 { font-size: 24px; margin-bottom: 10px; }
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        .user-info button {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .header-right-btn {
+            background: rgba(255,255,255,0.22);
+            border: 1px solid rgba(255,255,255,0.35);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .header-right-btn:hover {
+            background: rgba(255,255,255,0.35);
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: repeat(2,1fr);
+            gap:15px;
+        }
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            gap:12px;
+        }
+        @media (max-width: 600px) {
+            .form-grid { display:none; }
+            .form-row-2 { grid-template-columns: repeat(2,1fr); }
+            .form-row-3 { grid-template-columns: repeat(3,1fr); }
+            .header { padding:14px 12px; }
+            .header h1 { font-size:18px; margin-bottom:6px; }
+            .header-right-btn {
+                padding:6px 10px;
+                font-size:13px;
+            }
+        }
+        .pc-form { display: grid; grid-template-columns: 1fr 1fr; gap:15px; }
+        .mobile-form { display:none; }
+        @media (max-width:600px){
+            .pc-form { display:none; }
+            .mobile-form { display:block; }
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .form-group label .required { color: #e74c3c; }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .score-item { margin-bottom: 20px; }
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .score-label { font-weight: 500; color: #555; }
+        .score-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(to right, #ff6b6b, #feca57, #48dbfb, #1dd1a1);
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+        .score-desc {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #fff3cd;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #856404;
+        }
+        .option-group { margin-bottom: 15px; }
+        .option-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        .option-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .option-btn {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        .option-btn:hover { border-color: #667eea; }
+        .option-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        .option-btn.active.positive {
+            border-color: #1dd1a1;
+            background: #1dd1a1;
+        }
+        .option-btn.active.negative {
+            border-color: #ff6b6b;
+            background: #ff6b6b;
+        }
+        .summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .summary-score {
+            font-size: 36px;
+            font-weight: bold;
+        }
+        .summary-rating {
+            font-size: 24px;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+        .summary-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            font-size: 13px;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .submit-btn:hover { opacity: 0.9; }
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        .modal h3 { margin-bottom: 15px; color: #333; }
+        .modal input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-align: center;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .modal-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .modal-btn.secondary {
+            background: #f0f0f0;
+            color: #555;
+        }
+        .hidden { display: none !important; }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+        }
+        .toast.success { background: #1dd1a1; }
+        .toast.error { background: #ff6b6b; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div>
-        <h1>数据表格(Excel风格)</h1>
-        <p style="margin-top: 6px; font-size: 12px; opacity: 0.9;">
-           数据来源于用户测评反馈，仅供参考
-        </p>
-        <div style="margin-top: 10px; display: flex; gap: 10px;">
-          <a href="https://bycby88.github.io/ZSFK/" target="_blank" 
-             style="display: inline-block; padding: 8px 18px; background: rgba(255,255,255,0.35); color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 13px; border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 0 12px rgba(255,255,255,0.25); transition: all 0.25s;" 
-             onmouseover="this.style.background='rgba(255,255,255,0.5)';this.style.boxShadow='0 0 18px rgba(255,255,255,0.4)';this.style.transform='scale(1.03)'" 
-             onmouseout="this.style.background='rgba(255,255,255,0.35)';this.style.boxShadow='0 0 12px rgba(255,255,255,0.25)';this.style.transform='scale(1)'">
-            参与测评 →
-          </a>
+    <div class="container">
+        <div class="header">
+            <div class="header-center">
+                <div class="user-info">
+                    <span>测评人：<strong id="nickname-display">用户</strong></span>
+                    <button onclick="showNicknameModal()">昵称修改</button>
+                </div>
+            </div>
+            <a class="header-right-btn" href="https://bycby88.github.io/CSB/" target="_blank">榜单</a>
         </div>
-      </div>
-      <div class="controls">
-        <input type="text" class="search-box" id="globalSearch" placeholder="全局搜索：姓名/老师ID">
-        <button class="btn btn-clear" onclick="clearAllFilters()">🔄 重置</button>
-      </div>
+
+        <!-- 表单 -->
+        <form id="testForm" onsubmit="handleSubmit(event)">
+            <!-- 基本信息 -->
+            <div class="card">
+                <div class="card-title">📋 基本信息</div>
+                <!-- PC端布局 -->
+                <div class="pc-form">
+                    <div class="form-group">
+                        <label>老师ID <span class="required">*</span></label>
+                        <input type="text" id="teacherId" placeholder="如@s204386" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>老师姓名 <span class="required">*</span></label>
+                        <input type="text" id="teacherName" placeholder="输入姓名" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>年龄 <span class="required">*</span></label>
+                        <input type="number" id="age" min="18" max="60" placeholder="18-60" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>单价 <span class="required">*</span></label>
+                        <input type="number" id="price" min="3" max="10" placeholder="3-10" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>身高(cm) <span class="required">*</span></label>
+                        <input type="number" id="height" min="140" max="200" placeholder="140-200" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>体重(kg) <span class="required">*</span></label>
+                        <input type="number" id="weight" min="40" max="80" step="0.1" placeholder="40-80" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>胸围 <span class="required">*</span></label>
+                        <select id="bust" required>
+                            <option value="">请选择</option>
+                            <option value="A-">A-</option>
+                            <option value="A">A</option>
+                            <option value="A+">A+</option>
+                            <option value="B-">B-</option>
+                            <option value="B">B</option>
+                            <option value="B+">B+</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                            <option value="E">E</option>
+                            <option value="F">F</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- 手机端布局 -->
+                <div class="mobile-form">
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label>老师ID <span class="required">*</span></label>
+                            <input type="text" id="teacherIdMobile" placeholder="如@s204386" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label>老师姓名 <span class="required">*</span></label>
+                            <input type="text" id="teacherNameMobile" placeholder="输入姓名" required autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label>单价 <span class="required">*</span></label>
+                            <input type="number" id="priceMobile" min="3" max="10" placeholder="3-10" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label>胸围 <span class="required">*</span></label>
+                            <select id="bustMobile" required>
+                                <option value="">请选择</option>
+                                <option value="A-">A-</option>
+                                <option value="A">A</option>
+                                <option value="A+">A+</option>
+                                <option value="B-">B-</option>
+                                <option value="B">B</option>
+                                <option value="B+">B+</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                                <option value="E">E</option>
+                                <option value="F">F</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>年龄 <span class="required">*</span></label>
+                            <input type="number" id="ageMobile" min="18" max="60" placeholder="18‑60" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label>身高(cm) <span class="required">*</span></label>
+                            <input type="number" id="heightMobile" min="140" max="200" placeholder="140‑200" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label>体重(kg) <span class="required">*</span></label>
+                            <input type="number" id="weightMobile" min="40" max="80" step="0.1" placeholder="40‑80" required autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 基础评分 -->
+            <div class="card">
+                <div class="card-title">📊 基础评分（每项权重25%）</div>
+                
+                <div class="score-item">
+                    <div class="score-header">
+                        <span class="score-label">颜值</span>
+                        <span class="score-value" id="lookValue">6分</span>
+                    </div>
+                    <input type="range" id="look" min="1" max="5" step="0.5" value="3" oninput="updateScore('look', this.value)">
+                    <div class="score-desc" id="lookDesc">大众脸，不丑不美</div>
+                </div>
+
+                <div class="score-item">
+                    <div class="score-header">
+                        <span class="score-label">胸型</span>
+                        <span class="score-value" id="breastValue">6分</span>
+                    </div>
+                    <input type="range" id="breast" min="1" max="5" step="0.5" value="3" oninput="updateScore('breast', this.value)">
+                    <div class="score-desc" id="breastDesc">胸型一般，基本正常</div>
+                </div>
+
+                <div class="score-item">
+                    <div class="score-header">
+                        <span class="score-label">身材</span>
+                        <span class="score-value" id="figureValue">6分</span>
+                    </div>
+                    <input type="range" id="figure" min="1" max="5" step="0.5" value="3" oninput="updateScore('figure', this.value)">
+                    <div class="score-desc" id="figureDesc">不胖不瘦，正常身材</div>
+                </div>
+
+                <div class="score-item">
+                    <div class="score-header">
+                        <span class="score-label">服务</span>
+                        <span class="score-value" id="serviceValue">6分</span>
+                    </div>
+                    <input type="range" id="service" min="1" max="5" step="0.5" value="3" oninput="updateScore('service', this.value)">
+                    <div class="score-desc" id="serviceDesc">稍有服务，态度积极</div>
+                </div>
+
+                <!-- 汇总 -->
+                <div class="summary">
+                    <div class="summary-header">
+                        <div>
+                            <div style="font-size: 12px; opacity: 0.8;">最终得分</div>
+                            <div class="summary-score" id="finalScore">6.00</div>
+                        </div>
+                    </div>
+                    <div class="summary-details">
+                        <div>基础分：<span id="baseScore">6.00</span></div>
+                        <div>增减分：<span id="extraScore">+0.0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 附加项 -->
+            <div class="card">
+                <div class="card-title">➕ 附加项</div>
+                
+                <div class="option-group">
+                    <label>胸型质感</label>
+                    <div class="option-buttons">
+                        <div class="option-btn" data-group="breastNature" data-value="soft" onclick="selectOption(this)">天然柔软</div>
+                        <div class="option-btn" data-group="breastNature" data-value="normal" onclick="selectOption(this)">轻微科技</div>
+                        <div class="option-btn" data-group="breastNature" data-value="hard" onclick="selectOption(this)">帮帮硬</div>
+                    </div>
+                </div>
+
+                <div class="option-group">
+                    <label>皮肤状态</label>
+                    <div class="option-buttons">
+                        <div class="option-btn" data-group="skin" data-value="smooth" onclick="selectOption(this)">光滑细腻</div>
+                        <div class="option-btn" data-group="skin" data-value="normal" onclick="selectOption(this)">正常</div>
+                        <div class="option-btn" data-group="skin" data-value="rough" onclick="selectOption(this)">粗糙暗沉</div>
+                    </div>
+                </div>
+
+                <div class="option-group">
+                    <label>声音条件</label>
+                    <div class="option-buttons">
+                        <div class="option-btn" data-group="voice" data-value="pleasant" onclick="selectOption(this)">悦耳动听</div>
+                        <div class="option-btn" data-group="voice" data-value="normal" onclick="selectOption(this)">正常</div>
+                        <div class="option-btn" data-group="voice" data-value="bad" onclick="selectOption(this)">难听刺耳</div>
+                    </div>
+                </div>
+
+                <div class="option-group">
+                    <label>纹身情况</label>
+                    <div class="option-buttons">
+                        <div class="option-btn" data-group="tattoo" data-value="light" onclick="selectOption(this)">无纹身</div>
+                        <div class="option-btn" data-group="tattoo" data-value="small" onclick="selectOption(this)">小面积</div>
+                        <div class="option-btn" data-group="tattoo" data-value="heavy" onclick="selectOption(this)">大面积</div>
+                    </div>
+                </div>
+
+                <div class="option-group">
+                    <label>腰腹状态</label>
+                    <div class="option-buttons">
+                        <div class="option-btn" data-group="waist" data-value="tight" onclick="selectOption(this)">紧致</div>
+                        <div class="option-btn" data-group="waist" data-value="flat" onclick="selectOption(this)">平坦</div>
+                        <div class="option-btn" data-group="waist" data-value="belly" onclick="selectOption(this)">小肚子</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 不足之处 -->
+            <div class="card">
+                <div class="card-title">📝 不足之处与描述</div>
+                <div class="form-group">
+                    <label>不足之处（填写扣0.2分）</label>
+                    <input type="text" id="shortcoming" placeholder="如有明显不足请描述" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>详细描述 <span class="required">*</span></label>
+                    <textarea id="description" placeholder="描述老师的其他特点、服务体验等...（最多150字）" maxlength="150" required autocomplete="off"></textarea>
+                    <div style="text-align: right; font-size: 12px; color: #999; margin-top: 5px;">
+                        <span id="descCount">0</span>/150字
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">✨ 生成报告并提交</button>
+        </form>
     </div>
 
-    <!-- 统计栏 -->
-    <div class="stats">
-      <span>共 <strong id="totalCount">0</strong> 位老师</span>
+    <!-- 昵称修改弹窗 -->
+    <div class="modal-overlay hidden" id="nicknameModal">
+        <div class="modal">
+            <h3>修改昵称</h3>
+            <input type="text" id="nicknameInput" placeholder="请输入昵称" maxlength="20" autocomplete="off">
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeNicknameModal()">取消</button>
+                <button class="modal-btn primary" onclick="saveNickname()">保存</button>
+            </div>
+        </div>
     </div>
-    
-    <!-- 移动端滑动提示 -->
-    <div class="scroll-tip">← 左右滑动表格查看更多列 →</div>
-    <div class="table-wrapper">
-      <table id="dataTable">
-        <thead>
-          <tr>
-            <!-- 第1列 综合评分 -->
-            <th data-field="avgScore">
-              <div class="th-content">
-                <div class="th-label sort-active" onclick="sortTable('avgScore')">综合评分 <span class="sort-icon">↓</span></div>
-                <div class="filter-btn" onclick="toggleFilterPanel('avgScore')">▼</div>
-              </div>
-              <div class="filter-panel" id="filter-panel-avgScore">
-                <input type="text" placeholder="筛选数值（如 8-10）" data-field="avgScore">
-                <div class="filter-actions">
-                  <button onclick="clearFilter('avgScore')">清除</button>
-                  <button class="btn-apply" onclick="applyColumnFilter('avgScore')">确定</button>
-                </div>
-              </div>
-            </th>
-            <!-- 第2列 姓名 -->
-            <th data-field="name">
-              <div class="th-content">
-                <div class="th-label" onclick="sortTable('name')">姓名 <span class="sort-icon">↕</span></div>
-                <div class="filter-btn" onclick="toggleFilterPanel('name')">▼</div>
-              </div>
-              <div class="filter-panel" id="filter-panel-name">
-                <input type="text" placeholder="筛选文字" data-field="name">
-                <div class="filter-actions">
-                  <button onclick="clearFilter('name')">清除</button>
-                  <button class="btn-apply" onclick="applyColumnFilter('name')">确定</button>
-                </div>
-              </div>
-            </th>
-            <!-- 第3列 老师ID -->
-            <th data-field="teacher_id">
-              <div class="th-content">
-                <div>老师ID</div>
-                <div class="filter-btn" onclick="toggleFilterPanel('teacher_id')">▼</div>
-              </div>
-              <div class="filter-panel" id="filter-panel-teacher_id">
-                <input type="text" placeholder="筛选ID" data-field="teacher_id">
-                <div class="filter-actions">
-                  <button onclick="clearFilter('teacher_id')">清除</button>
-                  <button class="btn-apply" onclick="applyColumnFilter('teacher_id')">确定</button>
-                </div>
-              </div>
-            </th>
-            <!-- 第4列 好评 -->
-            <th data-field="goodCount">
-              <div class="th-content">
-                <div>好评</div>
-                <div class="filter-btn" onclick="toggleFilterPanel('goodCount')">▼</div>
-              </div>
-              <div class="filter-panel" id="filter-panel-goodCount">
-                <input type="text" placeholder="筛选数值" data-field="goodCount">
-                <div class="filter-actions">
-                  <button onclick="clearFilter('goodCount')">清除</button>
-                  <button class="btn-apply" onclick="applyColumnFilter('goodCount')">确定</button>
-                </div>
-              </div>
-            </th>
-            <!-- 第5列 中评 -->
-            <th data-field="mediumCount">
-              <div class="th-content">
-                <div>中评</div>
-                <div class="filter-btn" onclick="toggleFilterPanel('mediumCount')">▼</div>
-              </div>
-              <div class="filter-panel" id="filter-panel-mediumCount">
-                <input type="text" placeholder="筛选数值" data-field="mediumCount">
-                <div class="filter-actions">
-                  <button onclick="clearFilter('mediumCount')">清除</button>
-                  <button class="btn-apply" onclick="applyColumnFilter('mediumCount')">确定</button>
-                </div>
-              </div>
-            </th>
-            <!-- 第6列 差评 -->
-            <th data-field="badCount">
-              <div class="th-content">
-                <div>差评</div>
-                <div class="filter-btn" onclick="toggleFilterPanel('badCount')">▼</div>
-              </div>
-              <div class="filter-panel" id="filter-panel-badCount">
-                <input type="text" placeholder="筛选数值" data-field="badCount">
-                <div class="filter-actions">
-                  <button onclick="clearFilter('badCount')">清除</button>
-                  <button class="btn-apply" onclick="applyColumnFilter('badCount')">确定</button>
-                </div>
-              </div>
-            </th>
-            <!-- 第7列 单价 -->
-            <th data-field="price">
-              <div class="th-content">
-                <div class="th-label" onclick="sortTable('price')">单价 <span class="sort-icon">↕</span></div>
-                <div class="filter-btn" onclick="toggleFilterPanel('price')">▼</div>
-              </div>
-              <div class="filter-panel" id="filter-panel-price">
-                <input type="text" placeholder="筛选单价（如 3-10）" data-field="price">
-                <div class="filter-actions">
-                  <button onclick="clearFilter('price')">清除</button>
-                  <button class="btn-apply" onclick="applyColumnFilter('price')">确定</button>
-                </div>
-              </div>
-            </th>
-            <!-- 第8列 胸围 -->
-            <th data-field="bust">
-              <div class="th-content">
-                <div>胸围</div>
-                <div class="filter-btn" onclick="toggleFilterPanel('bust')">▼</div>
-              </div>
-              <div class="filter-panel" id="filter-panel-bust">
-                <input type="text" placeholder="筛选胸围" data-field="bust">
-                <div class="filter-actions">
-                  <button onclick="clearFilter('bust')">清除</button>
-                  <button class="btn-apply" onclick="applyColumnFilter('bust')">确定</button>
-                </div>
-              </div>
-            </th>
-            <!-- 第9列 年龄 -->
-            <th data-field="age">
-              <div class="th-content">
-                <div class="th-label" onclick="sortTable('age')">年龄 <span class="sort-icon">↕</span></div>
-                <div class="filter-btn" onclick="toggleFilterPanel('age')">▼</div>
-              </div>
-              <div class="filter-panel" id="filter-panel-age">
-                <input type="text" placeholder="筛选年龄" data-field="age">
-                <div class="filter-actions">
-                  <button onclick="clearFilter('age')">清除</button>
-                  <button class="btn-apply" onclick="applyColumnFilter('age')">确定</button>
-                </div>
-              </div>
-            </th>
-            <!-- 第10列 身高 -->
-            <th data-field="height">
-              <div class="th-content">
-                <div class="th-label" onclick="sortTable('height')">身高 <span class="sort-icon">↕</span></div>
-                <div class="filter-btn" onclick="toggleFilterPanel('height')">▼</div>
-              </div>
-              <div class="filter-panel" id="filter-panel-height">
-                <input type="text" placeholder="筛选身高" data-field="height">
-                <div class="filter-actions">
-                  <button onclick="clearFilter('height')">清除</button>
-                  <button class="btn-apply" onclick="applyColumnFilter('height')">确定</button>
-                </div>
-              </div>
-            </th>
-            <!-- 第11列 体重 -->
-            <th data-field="weight">
-              <div class="th-content">
-                <div class="th-label" onclick="sortTable('weight')">体重 <span class="sort-icon">↕</span></div>
-                <div class="filter-btn" onclick="toggleFilterPanel('weight')">▼</div>
-              </div>
-              <div class="filter-panel" id="filter-panel-weight">
-                <input type="text" placeholder="筛选体重" data-field="weight">
-                <div class="filter-actions">
-                  <button onclick="clearFilter('weight')">清除</button>
-                  <button class="btn-apply" onclick="applyColumnFilter('weight')">确定</button>
-                </div>
-              </div>
-            </th>
-            <!-- 第12列 颜值 -->
-            <th data-field="avgScoreLook">
-              <div class="th-content">
-                <div>颜值</div>
-                <div class="filter-btn" onclick="toggleFilterPanel('avgScoreLook')">▼</div>
-              </div>
-              <div class="filter-panel" id="filter-panel-avgScoreLook">
-                <input type="text" placeholder="筛选颜值评分" data-field="avgScoreLook">
-                <div class="filter-actions">
-                  <button onclick="clearFilter('avgScoreLook')">清除</button>
-                  <button class="btn-apply" onclick="applyColumnFilter('avgScoreLook')">确定</button>
-                </div>
-              </div>
-            </th>
-            <!-- 第13列 胸型 -->
-            <th data-field="avgScoreBreast">
-              <div class="th-content">
-                <div>胸型</div>
-                <div class="filter-btn" onclick="toggleFilterPanel('avgScoreBreast')">▼</div>
-              </div>
-              <div class="filter-panel" id="filter-panel-avgScoreBreast">
-                <input type="text" placeholder="筛选胸型评分" data-field="avgScoreBreast">
-                <div class="filter-actions">
-                  <button onclick="clearFilter('avgScoreBreast')">清除</button>
-                  <button class="btn-apply" onclick="applyColumnFilter('avgScoreBreast')">确定</button>
-                </div>
-              </div>
-            </th>
-            <!-- 第14列 腰腹 -->
-            <th data-field="avgScoreWaist">
-              <div class="th-content">
-                <div>腰腹</div>
-                <div class="filter-btn" onclick="toggleFilterPanel('avgScoreWaist')">▼</div>
-              </div>
-              <div class="filter-panel" id="filter-panel-avgScoreWaist">
-                <input type="text" placeholder="筛选腰腹评分" data-field="avgScoreWaist">
-                <div class="filter-actions">
-                  <button onclick="clearFilter('avgScoreWaist')">清除</button>
-                  <button class="btn-apply" onclick="applyColumnFilter('avgScoreWaist')">确定</button>
-                </div>
-              </div>
-            </th>
-            <!-- 第15列 臀腿 -->
-            <th data-field="avgScoreBodyLower">
-              <div class="th-content">
-                <div>臀腿</div>
-                <div class="filter-btn" onclick="toggleFilterPanel('avgScoreBodyLower')">▼</div>
-              </div>
-              <div class="filter-panel" id="filter-panel-avgScoreBodyLower">
-                <input type="text" placeholder="筛选臀腿评分" data-field="avgScoreBodyLower">
-                <div class="filter-actions">
-                  <button onclick="clearFilter('avgScoreBodyLower')">清除</button>
-                  <button class="btn-apply" onclick="applyColumnFilter('avgScoreBodyLower')">确定</button>
-                </div>
-              </div>
-            </th>
-            <!-- 第16列 服务 -->
-            <th data-field="avgScoreService">
-              <div class="th-content">
-                <div>服务</div>
-                <div class="filter-btn" onclick="toggleFilterPanel('avgScoreService')">▼</div>
-              </div>
-              <div class="filter-panel" id="filter-panel-avgScoreService">
-                <input type="text" placeholder="筛选服务评分" data-field="avgScoreService">
-                <div class="filter-actions">
-                  <button onclick="clearFilter('avgScoreService')">清除</button>
-                  <button class="btn-apply" onclick="applyColumnFilter('avgScoreService')">确定</button>
-                </div>
-              </div>
-            </th>
-          </tr>
-        </thead>
-        <tbody id="tableBody">
-          <tr><td colspan="16" class="loading-text">正在加载数据……</td></tr>
-        </tbody>
-      </table>
+
+    <!-- 成功弹窗 -->
+    <div class="modal-overlay hidden" id="successModal">
+        <div class="modal">
+            <h3 style="color: #1dd1a1;">✓ 提交成功</h3>
+            <p style="margin: 15px 0; color: #666;">报告已生成并复制到剪贴板</p>
+            <div class="modal-buttons">
+                <button class="modal-btn primary" onclick="copyAgain()">再次复制</button>
+                <button class="modal-btn secondary" onclick="closeSuccessModal()">关闭</button>
+            </div>
+        </div>
     </div>
-  </div>
-  <script>
-    // Cloudflare Workers API 配置
-    const API_URL = 'https://api.byg88.biz';
-    let rawAllData = [];
-    let currentData = [];
-    let sortField = 'avgScore';
-    let sortDirection = 'desc';
-    let filters = {};
-    let globalSearchTerm = '';
-    let hasRetried = false;
 
-    const CACHE_RAW_KEY = 'teacher_raw_all_data';
-    const CACHE_TIME_KEY = 'teacher_table_cache_time_cf';
-    const CACHE_DURATION = 30 * 60 * 1000;
-
-    function fetchWithTimeout(url, timeout = 8000) {
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), timeout);
-      return fetch(url, { signal: controller.signal })
-        .finally(() => clearTimeout(id));
-    }
-
-    function sortCompareFunc(a, b) {
-      let valA = a[sortField];
-      let valB = b[sortField];
-      const numA = parseFloat(valA);
-      const numB = parseFloat(valB);
-      if (!isNaN(numA) && !isNaN(numB)) {
-        valA = numA;
-        valB = numB;
-      }
-      if (valA > valB) return sortDirection === 'desc' ? -1 : 1;
-      if (valA < valB) return sortDirection === 'desc' ? 1 : -1;
-      return 0;
-    }
-
-    async function loadData() {
-      const tbody = document.getElementById('tableBody');
-      const now = Date.now();
-      const cachedRaw = localStorage.getItem(CACHE_RAW_KEY);
-      const cacheTime = localStorage.getItem(CACHE_TIME_KEY);
-
-      if (cachedRaw && cacheTime && (now - parseInt(cacheTime)) < CACHE_DURATION) {
-        rawAllData = JSON.parse(cachedRaw);
-        currentData = [...rawAllData].sort(sortCompareFunc);
-        renderTable(currentData);
-        remoteRefresh();
-        return;
-      }
-
-      try {
-        tbody.innerHTML = '<tr><td colspan="16" class="loading-text">请求远程数据中……</td></tr>';
-        // 直接读取后端预聚合 teacher_summary，去掉前端test_records聚合逻辑
-        const response = await fetchWithTimeout(`${API_URL}/api/collections/teacher_summary/records?page=1&perPage=2000`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const result = await response.json();
-        const records = result.items || [];
-
-        if (records.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="16" style="text-align:center;padding:40px;color:#999;">暂无数据</td></tr>';
-          return;
-        }
-
-        // =========修复：读取后端下划线原始字段，映射前端驼峰变量=========
-        rawAllData = records.map(r=>({
-          teacher_id: r.teacher_id,
-          teacher_name: r.teacher_name,
-          name: r.teacher_name,
-          age: r.age,
-          height: r.height,
-          weight: r.weight,
-          price: r.price,
-          bust: r.bust,
-          goodCount: r.good_count,
-          mediumCount: r.medium_count,
-          badCount: r.bad_count,
-          avgScore: Number(r.avg_score||0),
-          avgScoreLook: Number(r.avg_score_look||0),
-          avgScoreBreast: Number(r.avg_score_breast||0),
-          avgScoreWaist: Number(r.avg_score_waist||0),
-          avgScoreBodyLower: Number(r.avg_score_body_lower||0),
-          avgScoreService: Number(r.avg_score_service||0),
-        }));
-
-        localStorage.setItem(CACHE_RAW_KEY, JSON.stringify(rawAllData));
-        localStorage.setItem(CACHE_TIME_KEY, now.toString());
-
-        currentData = [...rawAllData].sort(sortCompareFunc);
-        renderTable(currentData);
-
-      } catch (error) {
-        console.error('加载异常', error);
-        if (!hasRetried) {
-          hasRetried = true;
-          tbody.innerHTML = '<tr><td colspan="16" class="loading-text">网络波动，正在自动重试……</td></tr>';
-          setTimeout(loadData, 1200);
-          return;
-        }
-        tbody.innerHTML = `<tr><td colspan="16" style="text-align:center;padding:40px;color:#dc3545;">加载数据失败<br><button class="btn reload-btn" onclick="loadData()">点击重新加载</button></td></tr>`;
-      }
-    }
-
-    // 后台静默刷新，同样读取summary表
-    async function remoteRefresh() {
-      try {
-        const response = await fetchWithTimeout(`${API_URL}/api/collections/teacher_summary/records?page=1&perPage=2000`);
-        if (!response.ok) return;
-        const result = await response.json();
-        const records = result.items || [];
-        if(records.length === 0) return;
-
-        // =========修复：读取后端下划线原始字段=========
-        const newRaw = records.map(r=>({
-          teacher_id: r.teacher_id,
-          teacher_name: r.teacher_name,
-          name: r.teacher_name,
-          age: r.age,
-          height: r.height,
-          weight: r.weight,
-          price: r.price,
-          bust: r.bust,
-          goodCount: r.good_count,
-          mediumCount: r.medium_count,
-          badCount: r.bad_count,
-          avgScore: Number(r.avg_score||0),
-          avgScoreLook: Number(r.avg_score_look||0),
-          avgScoreBreast: Number(r.avg_score_breast||0),
-          avgScoreWaist: Number(r.avg_score_waist||0),
-          avgScoreBodyLower: Number(r.avg_score_body_lower||0),
-          avgScoreService: Number(r.avg_score_service||0),
-        }));
-
-        rawAllData = newRaw;
-        localStorage.setItem(CACHE_RAW_KEY, JSON.stringify(rawAllData));
-        localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
-        currentData = [...rawAllData].sort(sortCompareFunc);
-        renderTable(currentData);
-      }catch(e){}
-    }
-
-    function renderTable(data) {
-      const tbody = document.getElementById('tableBody');
-      tbody.innerHTML = '';
-      
-      data.forEach((teacher) => {
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
-          <td class="${teacher.avgScore >= 8.5 ? 'score-high' : teacher.avgScore >= 6 ? 'score-medium' : 'score-low'}"><strong>${teacher.avgScore.toFixed(2)}</strong></td>
-          <td><strong>${teacher.teacher_name}</strong></td>
-          <td data-field="teacher_id" style="font-family: monospace; font-size: 12px;">${teacher.teacher_id}</td>
-          <td class="score-high">${teacher.goodCount}</td>
-          <td class="score-medium">${teacher.mediumCount}</td>
-          <td class="score-low">${teacher.badCount}</td>
-          <td>${teacher.price}档</td>
-          <td>${teacher.bust}</td>
-          <td>${teacher.age}</td>
-          <td>${teacher.height}cm</td>
-          <td>${teacher.weight}kg</td>
-          <td>${teacher.avgScoreLook.toFixed(1)}</td>
-          <td>${teacher.avgScoreBreast.toFixed(1)}</td>
-          <td>${teacher.avgScoreWaist.toFixed(1)}</td>
-          <td>${teacher.avgScoreBodyLower.toFixed(1)}</td>
-          <td>${teacher.avgScoreService.toFixed(1)}</td>
-        `;
-        
-        tbody.appendChild(row);
-      });
-      
-      document.getElementById('totalCount').textContent = data.length;
-    }
-
-    function applyFilters() {
-      let sortedBase = [...rawAllData].sort(sortCompareFunc);
-      let filtered = [...sortedBase];
-      
-      if (globalSearchTerm) {
-        const term = globalSearchTerm.toLowerCase();
-        filtered = filtered.filter(t =>
-          t.teacher_name.toLowerCase().includes(term) ||
-          t.teacher_id.toLowerCase().includes(term)
-        );
-      }
-
-      Object.keys(filters).forEach(field => {
-        const filterValue = filters[field];
-        if (!filterValue) return;
-
-        filtered = filtered.filter(t => {
-          const value = t[field];
-          if (typeof value === 'number') {
-            const numFilter = parseFloat(filterValue);
-            if (!isNaN(numFilter)) {
-              if (filterValue.includes('-')) {
-                const parts = filterValue.split('-').map(p => parseFloat(p.trim()));
-                if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-                  return value >= parts[0] && value <= parts[1];
-                }
-              }
-              return value === numFilter;
+<script>
+        // 状态管理
+        const state = {
+            nickname: '',
+            scores: { look: 3, breast: 3, figure: 3, service: 3 },
+            options: {
+                breastNature: null,
+                skin: null,
+                voice: null,
+                tattoo: null,
+                waist: null
             }
-          }
-          return String(value).toLowerCase().includes(filterValue.toLowerCase());
+        };
+
+        // 评分描述
+        const scoreDescs = {
+            look: ['丑', '普通偏下', '大众脸，不丑不美', '好看，有辨识度', '惊艳，素颜能打'],
+            breast: ['胸型塌陷，影响整体美感', '胸型下垂，注意体态调整', '胸型一般，基本正常', '胸型挺拔，形态良好', '胸型完美，形态极佳'],
+            figure: ['太差，没法看', '没腰没臀，平板身材', '不胖不瘦，正常身材', '有腰有臀，曲线明显', '前凸后翘，穿啥都炸'],
+            service: ['态度恶劣，没法沟通', '服务一般，有些机车', '稍有服务，态度积极', '比较专业服务，有特色', '专业服务，体验极佳']
+        };
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initNickname();
+            updateSummary();
+            
+            document.getElementById('description').addEventListener('input', function() {
+                document.getElementById('descCount').textContent = this.value.length;
+            });
+
+            document.getElementById('shortcoming').addEventListener('input', updateSummary);
+
+            // 手机端与PC双向同步
+            const syncList = [
+                ['teacherId','teacherIdMobile'],
+                ['teacherName','teacherNameMobile'],
+                ['age','ageMobile'],
+                ['price','priceMobile'],
+                ['height','heightMobile'],
+                ['weight','weightMobile'],
+                ['bust','bustMobile']
+            ];
+            syncList.forEach(([pcId,mId])=>{
+                const pcEl = document.getElementById(pcId);
+                const mEl = document.getElementById(mId);
+                pcEl.addEventListener('input',()=>{ mEl.value = pcEl.value; });
+                mEl.addEventListener('input',()=>{ pcEl.value = mEl.value; });
+                if(pcEl.tagName==='SELECT') pcEl.addEventListener('change',()=>{ mEl.value = pcEl.value; });
+                if(mEl.tagName==='SELECT') mEl.addEventListener('change',()=>{ pcEl.value = mEl.value; });
+            });
         });
-      });
 
-      currentData = filtered;
-      renderTable(filtered);
-      updateFilterButtonState();
-    }
-
-    function toggleFilterPanel(field) {
-      document.querySelectorAll('.filter-panel').forEach(panel => {
-        if (panel.id !== `filter-panel-${field}`) {
-          panel.classList.remove('show');
+        // 昵称管理
+        function initNickname() {
+            const saved = localStorage.getItem('evaluator_nickname');
+            if (saved) {
+                state.nickname = saved;
+            } else {
+                state.nickname = '用户' + Math.floor(Math.random() * 10000);
+                localStorage.setItem('evaluator_nickname', state.nickname);
+            }
+            document.getElementById('nickname-display').textContent = state.nickname;
         }
-      });
-      const panel = document.getElementById(`filter-panel-${field}`);
-      panel.classList.toggle('show');
-    }
 
-    function applyColumnFilter(field) {
-      const panel = document.getElementById(`filter-panel-${field}`);
-      const input = panel.querySelector('input');
-      const value = input.value.trim();
-      
-      if (value) {
-        filters[field] = value;
-      } else {
-        delete filters[field];
-      }
-      
-      applyFilters();
-      panel.classList.remove('show');
-    }
+        function showNicknameModal() {
+            document.getElementById('nicknameInput').value = state.nickname;
+            document.getElementById('nicknameModal').classList.remove('hidden');
+        }
 
-    function clearFilter(field) {
-      delete filters[field];
-      const panel = document.getElementById(`filter-panel-${field}`);
-      const input = panel.querySelector('input');
-      input.value = '';
-      
-      applyFilters();
-      panel.classList.remove('show');
-    }
+        function closeNicknameModal() {
+            document.getElementById('nicknameModal').classList.add('hidden');
+        }
 
-    function updateFilterButtonState() {
-      document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      Object.keys(filters).forEach(field => {
-        const btn = document.querySelector(`[data-field="${field}"] .filter-btn`);
-        if (btn) btn.classList.add('active');
-      });
-    }
+        function saveNickname() {
+            const newNick = document.getElementById('nicknameInput').value.trim();
+            if (newNick) {
+                state.nickname = newNick;
+                localStorage.setItem('evaluator_nickname', newNick);
+                document.getElementById('nickname-display').textContent = newNick;
+                closeNicknameModal();
+                showToast('昵称已保存', 'success');
+            }
+        }
 
-    function sortTable(field) {
-      if (sortField === field) {
-        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-      } else {
-        sortField = field;
-        sortDirection = 'desc';
-      }
+        // 评分更新
+        function updateScore(type, value) {
+            state.scores[type] = parseFloat(value);
+            // 5分制转换为10分制显示
+            const displayValue = (parseFloat(value) * 2).toFixed(0);
+            document.getElementById(type + 'Value').textContent = displayValue + '分';
 
-      document.querySelectorAll('.th-label').forEach(label => {
-        label.classList.remove('sort-active');
-        const icon = label.querySelector('.sort-icon');
-        if (icon) icon.textContent = '↕';
-      });
+            const index = Math.min(Math.floor(parseFloat(value) - 0.5), 4);
+            document.getElementById(type + 'Desc').textContent = scoreDescs[type][index];
 
-      const activeLabels = document.querySelectorAll(`.th-label[onclick="sortTable('${field}')"]`);
-      activeLabels.forEach(label => {
-        label.classList.add('sort-active');
-        const icon = label.querySelector('.sort-icon');
-        if (icon) icon.textContent = sortDirection === 'asc' ? '↑' : '↓';
-      });
+            updateSummary();
+        }
 
-      applyFilters();
-    }
+        // 选项选择
+        function selectOption(el) {
+            const group = el.dataset.group;
+            const value = el.dataset.value;
+            
+            document.querySelectorAll(`[data-group="${group}"]`).forEach(btn => {
+                btn.classList.remove('active', 'positive', 'negative');
+            });
+            
+            el.classList.add('active');
+            if (el.textContent.includes('+')) el.classList.add('positive');
+            if (el.textContent.includes('-')) el.classList.add('negative');
+            
+            state.options[group] = value;
+            updateSummary();
+        }
 
-    function clearAllFilters() {
-      filters = {};
-      globalSearchTerm = '';
-      
-      document.querySelectorAll('.filter-input-top').forEach(input => {
-        input.value = '';
-      });
-      document.getElementById('globalSearch').value = '';
-      
-      applyFilters();
-    }
+        // 附加项前端校验：5项必须全部选中
+        function validateExtraOptions(){
+            const requiredExtra = [
+                { key: 'breastNature', label: '胸型质感' },
+                { key: 'skin', label: '皮肤状态' },
+                { key: 'voice', label: '声音条件' },
+                { key: 'tattoo', label: '纹身情况' },
+                { key: 'waist', label: '腰腹状态' }
+            ];
+            for(const item of requiredExtra){
+                if(!state.options[item.key]){
+                    showToast(`请选择【${item.label}】`, 'error');
+                    return false;
+                }
+            }
+            return true;
+        }
 
-    document.getElementById('globalSearch').addEventListener('input', function(e) {
-      globalSearchTerm = e.target.value.trim();
-      applyFilters();
-    });
+        // 计算分数
+        function calculateScore() {
+            // 基础分：slider是1-5分，显示时×2转为10分制
+            // 计算时直接用10分制的值求平均
+            const look10 = state.scores.look * 2;
+            const breast10 = state.scores.breast * 2;
+            const figure10 = state.scores.figure * 2;
+            const service10 = state.scores.service * 2;
+            const base = (look10 + breast10 + figure10 + service10) / 4;
 
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.th-content') && !e.target.closest('.filter-panel')) {
-        document.querySelectorAll('.filter-panel').forEach(panel => {
-          panel.classList.remove('show');
-        });
-      }
-    });
+            let extra = 0;
+            if (state.options.breastNature === 'soft') extra += 0.2;
+            if (state.options.breastNature === 'hard') extra -= 0.2;
 
-    document.addEventListener('DOMContentLoaded', ()=>{
-      loadData();
-    });
+            const bust = document.getElementById('bust').value;
+            if (bust === 'A' || bust === 'A-') extra -= 0.4;
+            else if (bust === 'B-' || bust === 'A+') extra -= 0.2;
 
-    window.addEventListener('pageshow', (e) => {
-      if (e.persisted && rawAllData.length > 0) {
-        currentData = [...rawAllData].sort(sortCompareFunc);
-        applyFilters();
-      }
-    })
-  </script>
+            if (document.getElementById('shortcoming').value.trim()) extra -= 0.2;
+
+            if (state.options.skin === 'smooth') extra += 0.2;
+            if (state.options.skin === 'rough') extra -= 0.2;
+
+            if (state.options.voice === 'pleasant') extra += 0.2;
+            if (state.options.voice === 'bad') extra -= 0.2;
+
+            if (state.options.tattoo === 'light') extra += 0.2;
+            if (state.options.tattoo === 'heavy') extra -= 0.2;
+
+            if (state.options.waist === 'tight') extra += 0.2;
+            if (state.options.waist === 'belly') extra -= 0.2;
+
+            const final = Math.max(0, base + extra);
+            return { base, extra, final, look10, breast10, figure10, service10 };
+        }
+
+
+        function updateSummary() {
+            const { base, extra, final } = calculateScore();
+            document.getElementById('baseScore').textContent = base.toFixed(2);
+            document.getElementById('extraScore').textContent = (extra >= 0 ? '+' : '') + extra.toFixed(1);
+            document.getElementById('finalScore').textContent = final.toFixed(2);
+        }
+
+        // 生成报告
+        function generateReport() {
+            const teacherId = document.getElementById('teacherId').value;
+            const teacherName = document.getElementById('teacherName').value;
+            const age = document.getElementById('age').value;
+            const height = document.getElementById('height').value;
+            const weight = document.getElementById('weight').value;
+            const price = document.getElementById('price').value;
+            const bust = document.getElementById('bust').value;
+            const shortcoming = document.getElementById('shortcoming').value;
+            const description = document.getElementById('description').value;
+            const { final, look10, breast10, figure10, service10 } = calculateScore();
+
+            const lookDesc = document.getElementById('lookDesc').textContent;
+            const breastDesc = document.getElementById('breastDesc').textContent;
+            const figureDesc = document.getElementById('figureDesc').textContent;
+            const serviceDesc = document.getElementById('serviceDesc').textContent;
+
+            const maps = {
+                breastNature: { soft: '天然柔软', normal: '轻微科技', hard: '帮帮硬', null: '未选择' },
+                skin: { smooth: '光滑细腻', normal: '正常', rough: '粗糙暗沉', null: '未选择' },
+                voice: { pleasant: '悦耳动听', normal: '正常', bad: '难听刺耳', null: '未选择' },
+                tattoo: { light: '无纹身', small: '小面积', heavy: '大面积', null: '未选择' },
+                waist: { tight: '紧致', flat: '平坦', belly: '小肚子', null: '未选择' }
+            };
+
+            return `【老师测评报告】
+
+━━━━━━━
+基本信息
+· 老师ID：${teacherId}
+· 老师姓名：${teacherName}
+· 年龄：${age}岁
+· 身高：${height}cm
+· 体重：${weight}kg
+· 单价：${price}
+· 胸围：${bust}
+基础评分（10分制）：
+· 颜值：${look10}/10 【${lookDesc}】
+· 胸型：${breast10}/10 【${breastDesc}】
+· 身材：${figure10}/10 【${figureDesc}】
+· 服务：${service10}/10 【${serviceDesc}】
+附加项：
+· 胸型质感：${maps.breastNature[state.options.breastNature]}
+· 皮肤状态：${maps.skin[state.options.skin]}
+· 声音条件：${maps.voice[state.options.voice]}
+· 纹身情况：${maps.tattoo[state.options.tattoo]}
+· 腰腹状态：${maps.waist[state.options.waist]}
+最终得分：${final.toFixed(2)}分
+
+不足之处：
+${shortcoming || '无'}
+详细描述：
+${description}
+━━━━━━━
+测评人：${state.nickname}`;
+        }
+
+        // API 提交数据（对接新单表teacher_evaluations）
+        async function submitToAPI() {
+            const API_URL = 'https://cp.byg88.biz/api/collections/teacher_evaluations/records';
+
+            const bust = document.getElementById('bust').value;
+            const { final, look10, breast10, figure10, service10 } = calculateScore();
+
+            const requestBody = {
+                evaluator: state.nickname,
+                teacher_id: document.getElementById('teacherId').value,
+                teacher_name: document.getElementById('teacherName').value,
+                age: document.getElementById('age').value ? parseInt(document.getElementById('age').value) : null,
+                height: document.getElementById('height').value ? parseInt(document.getElementById('height').value) : null,
+                weight: document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null,
+                price: document.getElementById('price').value ? parseInt(document.getElementById('price').value) : null,
+                bust: bust || null,
+
+                score_look: look10,
+                score_breast: breast10,
+                score_figure: figure10,
+                score_service: service10,
+                final_score: final,
+
+                breast_nature: state.options.breastNature,
+                skin: state.options.skin,
+                voice: state.options.voice,
+                tattoo: state.options.tattoo,
+                waist: state.options.waist,
+
+                shortcoming: document.getElementById('shortcoming').value.trim() || null,
+                description: document.getElementById('description').value.trim()
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const resJson = await response.json();
+                if (!response.ok) {
+                    showToast(resJson.error || '提交失败', 'error');
+                    console.error('API 提交失败:', resJson);
+                    return false;
+                }
+                showToast('数据已提交服务器','success');
+                console.log('API 提交成功',resJson);
+                return true;
+            } catch (err) {
+                showToast('网络异常，提交失败','error');
+                console.error('API 提交错误:', err);
+                return false;
+            }
+        }
+
+        // 提交处理
+        async function handleSubmit(e) {
+            e.preventDefault();
+
+            // 前端校验附加项，不满足直接返回
+            if(!validateExtraOptions()){
+                return;
+            }
+
+            const report = generateReport();
+
+            try {
+                await navigator.clipboard.writeText(report);
+                showToast('报告已复制到剪贴板', 'success');
+            } catch (err) {
+                showToast('复制失败，请手动复制', 'error');
+            }
+
+            // 异步提交到 API
+            submitToAPI();
+
+            document.getElementById('successModal').classList.remove('hidden');
+            
+            // 重置表单
+            document.getElementById('testForm').reset();
+            state.scores = { look: 3, breast: 3, figure: 3, service: 3 };
+            state.options = { breastNature: null, skin: null, voice: null, tattoo: null, waist: null };
+            
+            document.querySelectorAll('.option-btn').forEach(el => {
+                el.classList.remove('active', 'positive', 'negative');
+            });
+            
+            ['look', 'breast', 'figure', 'service'].forEach(type => {
+                document.getElementById(type).value = 3;
+                document.getElementById(type + 'Value').textContent = '6分';
+                document.getElementById(type + 'Desc').textContent = scoreDescs[type][2];
+            });
+            
+            document.getElementById('descCount').textContent = '0';
+            updateSummary();
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
+        async function copyAgain() {
+            try {
+                await navigator.clipboard.writeText(generateReport());
+                showToast('已复制', 'success');
+            } catch (err) {
+                showToast('复制失败', 'error');
+            }
+        }
+
+        // Toast
+        function showToast(msg, type) {
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+</script>
 </body>
 </html>

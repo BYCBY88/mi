@@ -25,18 +25,22 @@
             gap:12px;
         }
         .header-left-btn {
-            background: rgba(255,255,255,0.22);
-            border: 1px solid rgba(255,255,255,0.35);
+            background: rgba(255,255,255,0.32);
+            border: 2px solid rgba(255,255,255,0.6);
+            box-shadow: 0 0 12px rgba(255,255,255,0.35);
             color: white;
-            padding: 10px 18px;
-            border-radius: 12px;
+            font-weight:bold;
+            padding: 12px 24px;
+            border-radius: 16px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
             text-decoration: none;
             white-space: nowrap;
+            transition: 0.25s ease;
         }
         .header-left-btn:hover {
-            background: rgba(255,255,255,0.35);
+            background: rgba(255,255,255,0.45);
+            box-shadow: 0 0 18px rgba(255,255,255,0.5);
         }
         .header-middle{
             display:flex;
@@ -336,7 +340,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <a class="header-left-btn" href="https://bycby88.github.io/CSB/" target="_blank">榜单</a>
+            <a class="header-left-btn" href="https://bycby88.github.io/CSB/" target="_blank">排行榜</a>
             <div class="header-middle">
                 <div class="user-info">
                     <span>测评人：<strong id="nickname-display">用户</strong></span>
@@ -758,19 +762,19 @@ ${description}
             const { final, look10, breast10, figure10, service10 } = calculateScore();
             const requestBody = {
                 evaluator: state.nickname,
-                teacherid: document.getElementById('teacherId').value,
-                teachername: document.getElementById('teacherName').value,
+                teacher_id: document.getElementById('teacherId').value,
+                teacher_name: document.getElementById('teacherName').value,
                 age: document.getElementById('age').value ? parseInt(document.getElementById('age').value) : null,
                 height: document.getElementById('height').value ? parseInt(document.getElementById('height').value) : null,
                 weight: document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null,
                 price: document.getElementById('price').value ? parseInt(document.getElementById('price').value) : null,
                 bust: bust || null,
-                scorelook: look10,
-                scorebreast: breast10,
-                scorefigure: figure10,
-                scoreservice: service10,
-                finalscore: final,
-                breastnature: state.options.breastNature,
+                score_look: look10,
+                score_breast: breast10,
+                score_figure: figure10,
+                score_service: service10,
+                final_score: final,
+                breast_nature: state.options.breastNature,
                 skin: state.options.skin,
                 voice: state.options.voice,
                 tattoo: state.options.tattoo,

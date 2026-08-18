@@ -16,50 +16,50 @@
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
-            border-radius: 12px;
+            padding: 18px 20px;
+            border-radius: 14px;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: relative;
+            gap:12px;
         }
-        .header-center {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-        }
-        .header h1 { font-size: 24px; margin-bottom: 10px; }
-        .user-info {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-size: 14px;
-        }
-        .user-info button {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        .header-right-btn {
+        .header-left-btn {
             background: rgba(255,255,255,0.22);
             border: 1px solid rgba(255,255,255,0.35);
             color: white;
             padding: 10px 18px;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 16px;
             text-decoration: none;
             white-space: nowrap;
         }
-        .header-right-btn:hover {
+        .header-left-btn:hover {
             background: rgba(255,255,255,0.35);
+        }
+        .header-middle{
+            display:flex;
+            align-items:center;
+            gap:12px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap:10px;
+            font-size:15px;
+        }
+        .user-info button {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding:7px 14px;
+            border-radius:22px;
+            cursor: pointer;
+            font-size:14px;
+        }
+        .user-info button:hover{
+            background:rgba(255,255,255,0.32);
         }
         .card {
             background: white;
@@ -92,15 +92,24 @@
             gap:12px;
         }
         @media (max-width: 600px) {
+            .header {
+                padding:14px 12px;
+                flex-wrap:wrap;
+            }
+            .header-left-btn {
+                padding:6px 12px;
+                font-size:13px;
+            }
+            .user-info{
+                font-size:13px;
+            }
+            .user-info button{
+                padding:5px 10px;
+                font-size:12px;
+            }
             .form-grid { display:none; }
             .form-row-2 { grid-template-columns: repeat(2,1fr); }
             .form-row-3 { grid-template-columns: repeat(3,1fr); }
-            .header { padding:14px 12px; }
-            .header h1 { font-size:18px; margin-bottom:6px; }
-            .header-right-btn {
-                padding:6px 10px;
-                font-size:13px;
-            }
         }
         .pc-form { display: grid; grid-template-columns: 1fr 1fr; gap:15px; }
         .mobile-form { display:none; }
@@ -305,8 +314,10 @@
         .hidden { display: none !important; }
         .toast {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top:20px;
+            left:50%;
+            transform:translateX(-50%);
+            max-width:calc(100% - 40px);
             padding: 12px 20px;
             border-radius: 8px;
             color: white;
@@ -317,56 +328,52 @@
         .toast.success { background: #1dd1a1; }
         .toast.error { background: #ff6b6b; }
         @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from { opacity: 0; transform:translateX(-50%) translateY(-10px); }
+            to { opacity: 1; transform:translateX(-50%) translateY(0); }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="header-center">
+            <a class="header-left-btn" href="https://bycby88.github.io/CSB/" target="_blank">榜单</a>
+            <div class="header-middle">
                 <div class="user-info">
                     <span>测评人：<strong id="nickname-display">用户</strong></span>
                     <button onclick="showNicknameModal()">昵称修改</button>
                 </div>
             </div>
-            <a class="header-right-btn" href="https://bycby88.github.io/CSB/" target="_blank">榜单</a>
         </div>
-
-        <!-- 表单 -->
         <form id="testForm" onsubmit="handleSubmit(event)">
-            <!-- 基本信息 -->
             <div class="card">
                 <div class="card-title">📋 基本信息</div>
-                <!-- PC端布局 -->
                 <div class="pc-form">
                     <div class="form-group">
-                        <label>老师ID <span class="required">*</span></label>
+                        <label>老师ID <span class="required"></span></label>
                         <input type="text" id="teacherId" placeholder="如@s204386" required autocomplete="off">
                     </div>
                     <div class="form-group">
-                        <label>老师姓名 <span class="required">*</span></label>
+                        <label>老师姓名 <span class="required"></span></label>
                         <input type="text" id="teacherName" placeholder="输入姓名" required autocomplete="off">
                     </div>
                     <div class="form-group">
-                        <label>年龄 <span class="required">*</span></label>
+                        <label>年龄 <span class="required"></span></label>
                         <input type="number" id="age" min="18" max="60" placeholder="18-60" required autocomplete="off">
                     </div>
                     <div class="form-group">
-                        <label>单价 <span class="required">*</span></label>
+                        <label>单价 <span class="required"></span></label>
                         <input type="number" id="price" min="3" max="10" placeholder="3-10" required autocomplete="off">
                     </div>
                     <div class="form-group">
-                        <label>身高(cm) <span class="required">*</span></label>
+                        <label>身高(cm) <span class="required"></span></label>
                         <input type="number" id="height" min="140" max="200" placeholder="140-200" required autocomplete="off">
                     </div>
                     <div class="form-group">
-                        <label>体重(kg) <span class="required">*</span></label>
+                        <label>体重(kg) <span class="required"></span></label>
                         <input type="number" id="weight" min="40" max="80" step="0.1" placeholder="40-80" required autocomplete="off">
                     </div>
                     <div class="form-group">
-                        <label>胸围 <span class="required">*</span></label>
+                        <label>胸围 <span class="required"></span></label>
                         <select id="bust" required>
                             <option value="">请选择</option>
                             <option value="A-">A-</option>
@@ -382,25 +389,24 @@
                         </select>
                     </div>
                 </div>
-                <!-- 手机端布局 -->
                 <div class="mobile-form">
                     <div class="form-row-2">
                         <div class="form-group">
-                            <label>老师ID <span class="required">*</span></label>
+                            <label>老师ID <span class="required"></span></label>
                             <input type="text" id="teacherIdMobile" placeholder="如@s204386" required autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <label>老师姓名 <span class="required">*</span></label>
+                            <label>老师姓名 <span class="required"></span></label>
                             <input type="text" id="teacherNameMobile" placeholder="输入姓名" required autocomplete="off">
                         </div>
                     </div>
                     <div class="form-row-2">
                         <div class="form-group">
-                            <label>单价 <span class="required">*</span></label>
+                            <label>单价 <span class="required"></span></label>
                             <input type="number" id="priceMobile" min="3" max="10" placeholder="3-10" required autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <label>胸围 <span class="required">*</span></label>
+                            <label>胸围 <span class="required"></span></label>
                             <select id="bustMobile" required>
                                 <option value="">请选择</option>
                                 <option value="A-">A-</option>
@@ -418,25 +424,22 @@
                     </div>
                     <div class="form-row-3">
                         <div class="form-group">
-                            <label>年龄 <span class="required">*</span></label>
+                            <label>年龄 <span class="required"></span></label>
                             <input type="number" id="ageMobile" min="18" max="60" placeholder="18‑60" required autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <label>身高(cm) <span class="required">*</span></label>
+                            <label>身高(cm) <span class="required"></span></label>
                             <input type="number" id="heightMobile" min="140" max="200" placeholder="140‑200" required autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <label>体重(kg) <span class="required">*</span></label>
+                            <label>体重(kg) <span class="required"></span></label>
                             <input type="number" id="weightMobile" min="40" max="80" step="0.1" placeholder="40‑80" required autocomplete="off">
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- 基础评分 -->
             <div class="card">
                 <div class="card-title">📊 基础评分（每项权重25%）</div>
-                
                 <div class="score-item">
                     <div class="score-header">
                         <span class="score-label">颜值</span>
@@ -445,7 +448,6 @@
                     <input type="range" id="look" min="1" max="5" step="0.5" value="3" oninput="updateScore('look', this.value)">
                     <div class="score-desc" id="lookDesc">大众脸，不丑不美</div>
                 </div>
-
                 <div class="score-item">
                     <div class="score-header">
                         <span class="score-label">胸型</span>
@@ -454,7 +456,6 @@
                     <input type="range" id="breast" min="1" max="5" step="0.5" value="3" oninput="updateScore('breast', this.value)">
                     <div class="score-desc" id="breastDesc">胸型一般，基本正常</div>
                 </div>
-
                 <div class="score-item">
                     <div class="score-header">
                         <span class="score-label">身材</span>
@@ -463,7 +464,6 @@
                     <input type="range" id="figure" min="1" max="5" step="0.5" value="3" oninput="updateScore('figure', this.value)">
                     <div class="score-desc" id="figureDesc">不胖不瘦，正常身材</div>
                 </div>
-
                 <div class="score-item">
                     <div class="score-header">
                         <span class="score-label">服务</span>
@@ -472,8 +472,6 @@
                     <input type="range" id="service" min="1" max="5" step="0.5" value="3" oninput="updateScore('service', this.value)">
                     <div class="score-desc" id="serviceDesc">稍有服务，态度积极</div>
                 </div>
-
-                <!-- 汇总 -->
                 <div class="summary">
                     <div class="summary-header">
                         <div>
@@ -487,11 +485,8 @@
                     </div>
                 </div>
             </div>
-
-            <!-- 附加项 -->
             <div class="card">
                 <div class="card-title">➕ 附加项</div>
-                
                 <div class="option-group">
                     <label>胸型质感</label>
                     <div class="option-buttons">
@@ -500,7 +495,6 @@
                         <div class="option-btn" data-group="breastNature" data-value="hard" onclick="selectOption(this)">帮帮硬</div>
                     </div>
                 </div>
-
                 <div class="option-group">
                     <label>皮肤状态</label>
                     <div class="option-buttons">
@@ -509,7 +503,6 @@
                         <div class="option-btn" data-group="skin" data-value="rough" onclick="selectOption(this)">粗糙暗沉</div>
                     </div>
                 </div>
-
                 <div class="option-group">
                     <label>声音条件</label>
                     <div class="option-buttons">
@@ -518,7 +511,6 @@
                         <div class="option-btn" data-group="voice" data-value="bad" onclick="selectOption(this)">难听刺耳</div>
                     </div>
                 </div>
-
                 <div class="option-group">
                     <label>纹身情况</label>
                     <div class="option-buttons">
@@ -527,7 +519,6 @@
                         <div class="option-btn" data-group="tattoo" data-value="heavy" onclick="selectOption(this)">大面积</div>
                     </div>
                 </div>
-
                 <div class="option-group">
                     <label>腰腹状态</label>
                     <div class="option-buttons">
@@ -537,8 +528,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- 不足之处 -->
             <div class="card">
                 <div class="card-title">📝 不足之处与描述</div>
                 <div class="form-group">
@@ -546,19 +535,16 @@
                     <input type="text" id="shortcoming" placeholder="如有明显不足请描述" autocomplete="off">
                 </div>
                 <div class="form-group">
-                    <label>详细描述 <span class="required">*</span></label>
+                    <label>详细描述 <span class="required"></span></label>
                     <textarea id="description" placeholder="描述老师的其他特点、服务体验等...（最多150字）" maxlength="150" required autocomplete="off"></textarea>
                     <div style="text-align: right; font-size: 12px; color: #999; margin-top: 5px;">
                         <span id="descCount">0</span>/150字
                     </div>
                 </div>
             </div>
-
             <button type="submit" class="submit-btn">✨ 生成报告并提交</button>
         </form>
     </div>
-
-    <!-- 昵称修改弹窗 -->
     <div class="modal-overlay hidden" id="nicknameModal">
         <div class="modal">
             <h3>修改昵称</h3>
@@ -569,8 +555,6 @@
             </div>
         </div>
     </div>
-
-    <!-- 成功弹窗 -->
     <div class="modal-overlay hidden" id="successModal">
         <div class="modal">
             <h3 style="color: #1dd1a1;">✓ 提交成功</h3>
@@ -581,9 +565,7 @@
             </div>
         </div>
     </div>
-
 <script>
-        // 状态管理
         const state = {
             nickname: '',
             scores: { look: 3, breast: 3, figure: 3, service: 3 },
@@ -595,27 +577,19 @@
                 waist: null
             }
         };
-
-        // 评分描述
         const scoreDescs = {
             look: ['丑', '普通偏下', '大众脸，不丑不美', '好看，有辨识度', '惊艳，素颜能打'],
             breast: ['胸型塌陷，影响整体美感', '胸型下垂，注意体态调整', '胸型一般，基本正常', '胸型挺拔，形态良好', '胸型完美，形态极佳'],
             figure: ['太差，没法看', '没腰没臀，平板身材', '不胖不瘦，正常身材', '有腰有臀，曲线明显', '前凸后翘，穿啥都炸'],
             service: ['态度恶劣，没法沟通', '服务一般，有些机车', '稍有服务，态度积极', '比较专业服务，有特色', '专业服务，体验极佳']
         };
-
-        // 初始化
         document.addEventListener('DOMContentLoaded', () => {
             initNickname();
             updateSummary();
-            
             document.getElementById('description').addEventListener('input', function() {
                 document.getElementById('descCount').textContent = this.value.length;
             });
-
             document.getElementById('shortcoming').addEventListener('input', updateSummary);
-
-            // 手机端与PC双向同步
             const syncList = [
                 ['teacherId','teacherIdMobile'],
                 ['teacherName','teacherNameMobile'],
@@ -634,70 +608,53 @@
                 if(mEl.tagName==='SELECT') mEl.addEventListener('change',()=>{ pcEl.value = mEl.value; });
             });
         });
-
-        // 昵称管理
         function initNickname() {
-            const saved = localStorage.getItem('evaluator_nickname');
+            const saved = localStorage.getItem('evaluatornickname');
             if (saved) {
                 state.nickname = saved;
             } else {
                 state.nickname = '用户' + Math.floor(Math.random() * 10000);
-                localStorage.setItem('evaluator_nickname', state.nickname);
+                localStorage.setItem('evaluatornickname', state.nickname);
             }
             document.getElementById('nickname-display').textContent = state.nickname;
         }
-
         function showNicknameModal() {
             document.getElementById('nicknameInput').value = state.nickname;
             document.getElementById('nicknameModal').classList.remove('hidden');
         }
-
         function closeNicknameModal() {
             document.getElementById('nicknameModal').classList.add('hidden');
         }
-
         function saveNickname() {
             const newNick = document.getElementById('nicknameInput').value.trim();
             if (newNick) {
                 state.nickname = newNick;
-                localStorage.setItem('evaluator_nickname', newNick);
+                localStorage.setItem('evaluatornickname', newNick);
                 document.getElementById('nickname-display').textContent = newNick;
                 closeNicknameModal();
                 showToast('昵称已保存', 'success');
             }
         }
-
-        // 评分更新
         function updateScore(type, value) {
             state.scores[type] = parseFloat(value);
-            // 5分制转换为10分制显示
             const displayValue = (parseFloat(value) * 2).toFixed(0);
             document.getElementById(type + 'Value').textContent = displayValue + '分';
-
             const index = Math.min(Math.floor(parseFloat(value) - 0.5), 4);
             document.getElementById(type + 'Desc').textContent = scoreDescs[type][index];
-
             updateSummary();
         }
-
-        // 选项选择
         function selectOption(el) {
             const group = el.dataset.group;
             const value = el.dataset.value;
-            
             document.querySelectorAll(`[data-group="${group}"]`).forEach(btn => {
                 btn.classList.remove('active', 'positive', 'negative');
             });
-            
             el.classList.add('active');
             if (el.textContent.includes('+')) el.classList.add('positive');
             if (el.textContent.includes('-')) el.classList.add('negative');
-            
             state.options[group] = value;
             updateSummary();
         }
-
-        // 附加项前端校验：5项必须全部选中
         function validateExtraOptions(){
             const requiredExtra = [
                 { key: 'breastNature', label: '胸型质感' },
@@ -714,52 +671,36 @@
             }
             return true;
         }
-
-        // 计算分数
         function calculateScore() {
-            // 基础分：slider是1-5分，显示时×2转为10分制
-            // 计算时直接用10分制的值求平均
             const look10 = state.scores.look * 2;
             const breast10 = state.scores.breast * 2;
             const figure10 = state.scores.figure * 2;
             const service10 = state.scores.service * 2;
             const base = (look10 + breast10 + figure10 + service10) / 4;
-
             let extra = 0;
             if (state.options.breastNature === 'soft') extra += 0.2;
             if (state.options.breastNature === 'hard') extra -= 0.2;
-
             const bust = document.getElementById('bust').value;
             if (bust === 'A' || bust === 'A-') extra -= 0.4;
             else if (bust === 'B-' || bust === 'A+') extra -= 0.2;
-
             if (document.getElementById('shortcoming').value.trim()) extra -= 0.2;
-
             if (state.options.skin === 'smooth') extra += 0.2;
             if (state.options.skin === 'rough') extra -= 0.2;
-
             if (state.options.voice === 'pleasant') extra += 0.2;
             if (state.options.voice === 'bad') extra -= 0.2;
-
             if (state.options.tattoo === 'light') extra += 0.2;
             if (state.options.tattoo === 'heavy') extra -= 0.2;
-
             if (state.options.waist === 'tight') extra += 0.2;
             if (state.options.waist === 'belly') extra -= 0.2;
-
             const final = Math.max(0, base + extra);
             return { base, extra, final, look10, breast10, figure10, service10 };
         }
-
-
         function updateSummary() {
             const { base, extra, final } = calculateScore();
             document.getElementById('baseScore').textContent = base.toFixed(2);
             document.getElementById('extraScore').textContent = (extra >= 0 ? '+' : '') + extra.toFixed(1);
             document.getElementById('finalScore').textContent = final.toFixed(2);
         }
-
-        // 生成报告
         function generateReport() {
             const teacherId = document.getElementById('teacherId').value;
             const teacherName = document.getElementById('teacherName').value;
@@ -771,12 +712,10 @@
             const shortcoming = document.getElementById('shortcoming').value;
             const description = document.getElementById('description').value;
             const { final, look10, breast10, figure10, service10 } = calculateScore();
-
             const lookDesc = document.getElementById('lookDesc').textContent;
             const breastDesc = document.getElementById('breastDesc').textContent;
             const figureDesc = document.getElementById('figureDesc').textContent;
             const serviceDesc = document.getElementById('serviceDesc').textContent;
-
             const maps = {
                 breastNature: { soft: '天然柔软', normal: '轻微科技', hard: '帮帮硬', null: '未选择' },
                 skin: { smooth: '光滑细腻', normal: '正常', rough: '粗糙暗沉', null: '未选择' },
@@ -784,9 +723,7 @@
                 tattoo: { light: '无纹身', small: '小面积', heavy: '大面积', null: '未选择' },
                 waist: { tight: '紧致', flat: '平坦', belly: '小肚子', null: '未选择' }
             };
-
             return `【老师测评报告】
-
 ━━━━━━━
 基本信息
 · 老师ID：${teacherId}
@@ -808,7 +745,6 @@
 · 纹身情况：${maps.tattoo[state.options.tattoo]}
 · 腰腹状态：${maps.waist[state.options.waist]}
 最终得分：${final.toFixed(2)}分
-
 不足之处：
 ${shortcoming || '无'}
 详细描述：
@@ -816,47 +752,38 @@ ${description}
 ━━━━━━━
 测评人：${state.nickname}`;
         }
-
-        // API 提交数据（对接新单表teacher_evaluations）
         async function submitToAPI() {
             const API_URL = 'https://cp.byg88.biz/api/collections/teacher_evaluations/records';
-
             const bust = document.getElementById('bust').value;
             const { final, look10, breast10, figure10, service10 } = calculateScore();
-
             const requestBody = {
                 evaluator: state.nickname,
-                teacher_id: document.getElementById('teacherId').value,
-                teacher_name: document.getElementById('teacherName').value,
+                teacherid: document.getElementById('teacherId').value,
+                teachername: document.getElementById('teacherName').value,
                 age: document.getElementById('age').value ? parseInt(document.getElementById('age').value) : null,
                 height: document.getElementById('height').value ? parseInt(document.getElementById('height').value) : null,
                 weight: document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null,
                 price: document.getElementById('price').value ? parseInt(document.getElementById('price').value) : null,
                 bust: bust || null,
-
-                score_look: look10,
-                score_breast: breast10,
-                score_figure: figure10,
-                score_service: service10,
-                final_score: final,
-
-                breast_nature: state.options.breastNature,
+                scorelook: look10,
+                scorebreast: breast10,
+                scorefigure: figure10,
+                scoreservice: service10,
+                finalscore: final,
+                breastnature: state.options.breastNature,
                 skin: state.options.skin,
                 voice: state.options.voice,
                 tattoo: state.options.tattoo,
                 waist: state.options.waist,
-
                 shortcoming: document.getElementById('shortcoming').value.trim() || null,
                 description: document.getElementById('description').value.trim()
             };
-
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestBody)
                 });
-
                 const resJson = await response.json();
                 if (!response.ok) {
                     showToast(resJson.error || '提交失败', 'error');
@@ -872,53 +799,37 @@ ${description}
                 return false;
             }
         }
-
-        // 提交处理
         async function handleSubmit(e) {
             e.preventDefault();
-
-            // 前端校验附加项，不满足直接返回
             if(!validateExtraOptions()){
                 return;
             }
-
             const report = generateReport();
-
             try {
                 await navigator.clipboard.writeText(report);
                 showToast('报告已复制到剪贴板', 'success');
             } catch (err) {
                 showToast('复制失败，请手动复制', 'error');
             }
-
-            // 异步提交到 API
             submitToAPI();
-
             document.getElementById('successModal').classList.remove('hidden');
-            
-            // 重置表单
             document.getElementById('testForm').reset();
             state.scores = { look: 3, breast: 3, figure: 3, service: 3 };
             state.options = { breastNature: null, skin: null, voice: null, tattoo: null, waist: null };
-            
             document.querySelectorAll('.option-btn').forEach(el => {
                 el.classList.remove('active', 'positive', 'negative');
             });
-            
             ['look', 'breast', 'figure', 'service'].forEach(type => {
                 document.getElementById(type).value = 3;
                 document.getElementById(type + 'Value').textContent = '6分';
                 document.getElementById(type + 'Desc').textContent = scoreDescs[type][2];
             });
-            
             document.getElementById('descCount').textContent = '0';
             updateSummary();
         }
-
         function closeSuccessModal() {
             document.getElementById('successModal').classList.add('hidden');
         }
-
         async function copyAgain() {
             try {
                 await navigator.clipboard.writeText(generateReport());
@@ -927,8 +838,6 @@ ${description}
                 showToast('复制失败', 'error');
             }
         }
-
-        // Toast
         function showToast(msg, type) {
             const toast = document.createElement('div');
             toast.className = 'toast ' + type;

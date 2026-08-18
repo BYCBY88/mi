@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>老师测评</title>
+    <title>测评</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -815,8 +815,23 @@ ${description}
             } catch (err) {
                 showToast('复制失败，请手动复制', 'error');
             }
-            submitToAPI();
-            document.getElementById('successModal').classList.remove('hidden');
+            const ok = await submitToAPI();
+            if(ok){
+                document.getElementById('successModal').classList.remove('hidden');
+                document.getElementById('testForm').reset();
+                state.scores = { look: 3, breast: 3, figure: 3, service: 3 };
+                state.options = { breastNature: null, skin: null, voice: null, tattoo: null, waist: null };
+                document.querySelectorAll('.option-btn').forEach(el => {
+                    el.classList.remove('active', 'positive', 'negative');
+                });
+                ['look', 'breast', 'figure', 'service'].forEach(type => {
+                    document.getElementById(type).value = 3;
+                    document.getElementById(type+'Value').textContent = '6分';
+                    document.getElementById(type+'Desc').textContent = scoreDescs[type][2];
+                });
+                document.getElementById('descCount').textContent = '0';
+                updateSummary();
+            }
             document.getElementById('testForm').reset();
             state.scores = { look: 3, breast: 3, figure: 3, service: 3 };
             state.options = { breastNature: null, skin: null, voice: null, tattoo: null, waist: null };

@@ -1029,7 +1029,9 @@
         }
       });
       if (!res.ok) throw new Error('请求失败');
-      return res.json();
+      const result = await res.json();
+      // Workers 返回 {success: true, data: [...]} 格式
+      return result.data || result;
     }
 
     // 加载数据
@@ -1037,8 +1039,8 @@
       try {
         // 并行加载AI评分和管理评分
         const [aiScores, adminScores] = await Promise.all([
-          apiRequest(API_BASE + '/ai_scores?select=*'),
-          apiRequest(API_BASE + '/admin_scores?select=*')
+          apiRequest(API_BASE + '/api/ai-scores'),
+          apiRequest(API_BASE + '/api/admin-scores')
         ]);
 
         // 按teacher_id分组聚合管理评分
@@ -1178,7 +1180,7 @@
 
       // 加载管理评分
       try {
-        adminReviews = await apiRequest(API_BASE + `/admin_scores?teacher_id=eq.${teacherId}&order=created_at.desc`);
+        adminReviews = await apiRequest(API_BASE + `/api/admin-scores?teacher_id=${teacherId}`);
       } catch (e) {
         adminReviews = [];
       }
@@ -1271,7 +1273,7 @@
       // 实时查询采集记录数量
       let collectionCount = 0;
       try {
-        const cols = await apiRequest(API_BASE + `/collections?select=id&teacher_id=eq.${teacher.teacher_id}`);
+        const cols = await apiRequest(API_BASE + `/api/collections?teacher_id=${teacher.teacher_id}`);
         collectionCount = cols.length;
       } catch (e) {
         collectionCount = teacher.collection_count || 0;
@@ -1322,7 +1324,7 @@
 
       try {
         if (collections.length === 0) {
-          collections = await apiRequest(API_BASE + `/collections?select=*&teacher_id=eq.${currentTeacher.teacher_id}&order=collected_at.desc`);
+          collections = await apiRequest(API_BASE + `/api/collections?teacher_id=${currentTeacher.teacher_id}`);
         }
 
         if (collections.length === 0) {
@@ -1505,7 +1507,7 @@
       const finalScore = ((scoreLook + scoreBreast + scoreFigure + scoreService) / 4).toFixed(1);
 
       try {
-        const response = await fetch(API_BASE + '/admin_scores', {
+        const response = await fetch(API_BASE + '/api/admin-scores', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

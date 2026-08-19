@@ -1074,6 +1074,7 @@
             teacher_name: item.teacher_name,
             avg_score_look: item.avg_score_look,
             avg_score_breast: item.avg_score_breast,
+            avg_score_figure: item.avg_score_figure,
             avg_score_service: item.avg_score_service,
             avg_final_score: item.avg_final_score,
             review_count: item.review_count
@@ -1091,6 +1092,7 @@
               // 排行榜显示用实测评分
               display_score_look: admin.avg_score_look.toFixed(1),
               display_score_breast: admin.avg_score_breast.toFixed(1),
+              display_score_figure: admin.avg_score_figure.toFixed(1),
               display_score_service: admin.avg_score_service.toFixed(1),
               display_final_score: admin.avg_final_score.toFixed(1),
               avg_score: parseFloat(admin.avg_final_score.toFixed(1)),
@@ -1105,6 +1107,7 @@
               ...ai,
               display_score_look: ai.score_look,
               display_score_breast: ai.score_breast,
+              display_score_figure: ai.score_figure,
               display_score_service: ai.score_service,
               display_final_score: ai.final_score,
               avg_score: ai.final_score,
@@ -1136,6 +1139,7 @@
               // 显示用实测评分
               display_score_look: admin.avg_score_look.toFixed(1),
               display_score_breast: admin.avg_score_breast.toFixed(1),
+              display_score_figure: admin.avg_score_figure.toFixed(1),
               display_score_service: admin.avg_score_service.toFixed(1),
               display_final_score: admin.avg_final_score.toFixed(1),
               avg_score: parseFloat(admin.avg_final_score.toFixed(1)),
@@ -1300,7 +1304,7 @@
     function renderAdminReview() {
       const review = adminReviews[currentReviewIndex];
       const content = document.getElementById('tabContent');
-      
+
       document.getElementById('pageInfo').textContent = `${currentReviewIndex + 1} / ${adminReviews.length}`;
       document.getElementById('prevBtn').disabled = currentReviewIndex === 0;
       document.getElementById('nextBtn').disabled = currentReviewIndex >= adminReviews.length - 1;
@@ -1308,24 +1312,29 @@
       content.innerHTML = `
         <div class="eval-card">
           <div class="eval-header compact">
-            <span class="eval-title">管理评分 #${currentReviewIndex + 1}</span>
+            <span class="eval-title">实测评分 #${currentReviewIndex + 1}</span>
             <div class="eval-score-row">
               <span class="eval-score-value">${review.final_score}</span>
               <div class="stars">${renderStars(review.final_score)}</div>
             </div>
           </div>
-          
+
           <div class="score-bars-compact">
             ${renderScoreBar('颜值', review.score_look, 'score_look')}
             ${renderScoreBar('胸部', review.score_breast, 'score_breast')}
             ${renderScoreBar('身材', review.score_figure, 'score_figure')}
             ${renderScoreBar('服务', review.score_service, 'score_service')}
           </div>
-          
+
           <div class="attrs-grid compact">
+            <div class="attr-item"><span class="attr-label">年龄</span><span class="attr-value">${review.age || '-'}岁</span></div>
+            <div class="attr-item"><span class="attr-label">身高</span><span class="attr-value">${review.height || '-'}cm</span></div>
+            <div class="attr-item"><span class="attr-label">体重</span><span class="attr-value">${review.weight || '-'}kg</span></div>
+            <div class="attr-item"><span class="attr-label">价格</span><span class="attr-value">¥${review.price || '-'}</span></div>
+            <div class="attr-item"><span class="attr-label">胸围</span><span class="attr-value">${review.bust || '-'}</span></div>
             ${review.shortcoming ? `<div class="attr-item attr-full"><span class="attr-label">缺点</span><span class="attr-value" style="color: #ff6b6b;">${review.shortcoming}</span></div>` : ''}
           </div>
-          
+
           <div class="eval-content compact">
             <div class="eval-text">${review.description || '暂无详细评价'}</div>
             <div class="eval-meta">评估人: ${review.evaluator} · ${formatDate(review.created_at)}</div>
@@ -1546,7 +1555,17 @@
     // 测评表单
     function showReviewForm() {
       document.getElementById('reviewForm').classList.add('active');
-      // 预填教师名称
+
+      // 从当前教师数据中获取默认值（优先使用管理评分，其次AI评分）
+      const teacher = currentTeacher;
+      if (teacher) {
+        // 优先使用display_字段（实测评分），其次使用原始字段（AI评分）
+        document.getElementById('scoreLook').value = teacher.display_score_look || teacher.score_look || '8';
+        document.getElementById('scoreBreast').value = teacher.display_score_breast || teacher.score_breast || '8';
+        document.getElementById('scoreFigure').value = teacher.display_score_figure || teacher.score_figure || '8';
+        document.getElementById('scoreService').value = teacher.display_score_service || teacher.score_service || '8';
+      }
+
       document.getElementById('reviewEvaluator').focus();
     }
 

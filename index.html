@@ -908,7 +908,7 @@
         ID: <span>-</span> 📋
       </div>
       <div class="total-count" id="detailCount">-</div>
-      <button class="add-review-btn" onclick="showPasswordModal()">+ 添加管理测评</button>
+      <button class="add-review-btn" onclick="showPasswordModal()">+ 添加实测评分</button>
     </div>
 
     <!-- 测评表单 -->
@@ -979,7 +979,7 @@
     </div>
 
     <div class="tab-switcher">
-      <button class="tab-btn active" data-tab="admin">管理评分</button>
+      <button class="tab-btn active" data-tab="admin">实测评分</button>
       <button class="tab-btn" data-tab="ai">AI评分</button>
       <button class="tab-btn" data-tab="collections">采集记录</button>
     </div>
@@ -1268,7 +1268,7 @@
       document.getElementById('detailId').querySelector('span').textContent = teacher.teacher_id;
       document.getElementById('detailCount').textContent = `${teacher.review_count}条评价 · 采集${teacher.collection_count}条`;
 
-      // 加载管理评分
+      // 加载实测评分
       try {
         const result = await apiRequest(API_BASE + `/api/admin-scores?teacher_id=${teacherId}`);
         adminReviews = result.data || result || [];
@@ -1325,7 +1325,7 @@
       }
     }
 
-    // 渲染管理评分
+    // 渲染实测评分
     function renderAdminReview() {
       const review = adminReviews[currentReviewIndex];
       const content = document.getElementById('tabContent');

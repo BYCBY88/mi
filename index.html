@@ -1157,11 +1157,11 @@
       let filtered = allData;
       if (currentRange !== 'all') {
         filtered = allData.filter(t => {
-          const price = t.price || 0;
+          const price = parseInt(t.price) || 0;
           switch(currentRange) {
-            case '4-': return price <= 4;
+            case '4-': return price < 4;
             case '5': return price === 5;
-            case '6+': return price >= 6;
+            case '6+': return price > 6;
             default: return true;
           }
         });
@@ -1239,8 +1239,12 @@
       // 滚动到顶部
       window.scrollTo(0, 0);
 
-      // 默认显示AI评分
-      switchTab('ai');
+      // 默认显示：有实测评分显示实测，否则显示AI评分
+      if (teacher.has_admin_review) {
+        switchTab('admin');
+      } else {
+        switchTab('ai');
+      }
     }
 
     // 返回首页
@@ -1318,6 +1322,11 @@
 
     // 渲染AI评分卡片
     async function renderAICard(teacher) {
+      // 如果没有AI评分数据，显示空状态
+      if (!teacher.score_look && !teacher.score_breast && !teacher.final_score) {
+        return '<div class="eval-card"><div class="empty-state">暂无AI评分数据</div></div>';
+      }
+
       // 实时查询采集记录数量
       let collectionCount = 0;
       try {
@@ -1333,16 +1342,16 @@
           <div class="eval-header compact">
             <span class="eval-title">AI综合评分</span>
             <div class="eval-score-row">
-              <span class="eval-score-value">${teacher.final_score}</span>
-              <div class="stars">${renderStars(teacher.final_score)}</div>
+              <span class="eval-score-value">${teacher.final_score || '-'}</span>
+              <div class="stars">${renderStars(teacher.final_score || 0)}</div>
             </div>
           </div>
 
           <div class="score-bars-compact">
-            ${renderScoreBar('颜值', teacher.score_look, 'score_look')}
-            ${renderScoreBar('胸部', teacher.score_breast, 'score_breast')}
-            ${renderScoreBar('身材', teacher.score_figure, 'score_figure')}
-            ${renderScoreBar('服务', teacher.score_service, 'score_service')}
+            ${renderScoreBar('颜值', teacher.score_look || 0, 'score_look')}
+            ${renderScoreBar('胸部', teacher.score_breast || 0, 'score_breast')}
+            ${renderScoreBar('身材', teacher.score_figure || 0, 'score_figure')}
+            ${renderScoreBar('服务', teacher.score_service || 0, 'score_service')}
           </div>
 
           <div class="attrs-grid compact">

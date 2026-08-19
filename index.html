@@ -1239,10 +1239,10 @@
               <div class="teacher-name">${teacher.teacher_name}</div>
               <div class="teacher-count">${teacher.review_count}条评价 · ¥${teacher.price || '-'}</div>
               <div class="teacher-scores">
-                <span>颜值${teacher.score_look}</span>
-                <span>胸${teacher.score_breast}</span>
-                <span>身材${teacher.score_figure}</span>
-                <span>服务${teacher.score_service}</span>
+                <span>颜值${teacher.display_score_look || teacher.score_look || '-'}</span>
+                <span>胸${teacher.display_score_breast || teacher.score_breast || '-'}</span>
+                <span>身材${teacher.display_score_figure || teacher.score_figure || '-'}</span>
+                <span>服务${teacher.display_score_service || teacher.score_service || '-'}</span>
               </div>
             </div>
             <div class="teacher-score">

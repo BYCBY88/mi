@@ -1092,11 +1092,18 @@
     // 加载数据
     async function loadData() {
       try {
-        // 并行加载AI评分和分组管理评分
-        const [aiScores, adminGrouped] = await Promise.all([
+        // 并行加载AI评分、分组管理评分和采集记录
+        const [aiScores, adminGrouped, collections] = await Promise.all([
           apiRequest(API_BASE + '/api/ai-scores'),
-          apiRequest(API_BASE + '/api/admin-scores/grouped')
+          apiRequest(API_BASE + '/api/admin-scores/grouped'),
+          apiRequest(API_BASE + '/api/collections')
         ]);
+
+        // 计算每个教师的采集数量
+        const collectionCountMap = {};
+        collections.forEach(col => {
+          collectionCountMap[col.teacher_id] = (collectionCountMap[col.teacher_id] || 0) + 1;
+        });
 
         // 将分组管理评分转为Map
         const adminMap = {};
@@ -1116,12 +1123,13 @@
         // 合并数据：以AI评分为基础，叠加管理评分
         allData = aiScores.map(ai => {
           const admin = adminMap[ai.teacher_id];
+          const collectionCount = collectionCountMap[ai.teacher_id] || 0;
 
           if (admin && admin.review_count > 0) {
             // 有管理评分，保留AI原始数据，同时添加实测数据用于显示
-            // 基本信息优先使用AI数据，如果AI数据为空则尝试从管理评分获取
             return {
               ...ai,
+              collection_count: collectionCount,
               // 排行榜显示用实测评分
               display_score_look: admin.avg_score_look.toFixed(1),
               display_score_breast: admin.avg_score_breast.toFixed(1),
@@ -1131,13 +1139,14 @@
               avg_score: parseFloat(admin.avg_final_score.toFixed(1)),
               review_count: admin.review_count,
               has_admin_review: true,
-              has_ai_score: true,  // 有AI评分
+              has_ai_score: true,
               source: '实测评分'
             };
           } else {
             // 无管理评分，使用AI评分
             return {
               ...ai,
+              collection_count: collectionCount,
               display_score_look: ai.score_look,
               display_score_breast: ai.score_breast,
               display_score_figure: ai.score_figure,
@@ -1146,7 +1155,7 @@
               avg_score: ai.final_score,
               review_count: 0,
               has_admin_review: false,
-              has_ai_score: true,  // 有AI评分
+              has_ai_score: true,
               source: 'AI评分'
             };
           }
@@ -1155,6 +1164,7 @@
         // 添加只有管理评分没有AI评分的教师
         adminGrouped.forEach(admin => {
           if (!aiScores.find(ai => ai.teacher_id === admin.teacher_id)) {
+            const collectionCount = collectionCountMap[admin.teacher_id] || 0;
             allData.push({
               teacher_id: admin.teacher_id,
               teacher_name: admin.teacher_name,
@@ -1163,6 +1173,7 @@
               weight: null,
               price: null,
               bust: null,
+              collection_count: collectionCount,
               // AI评分字段设为null表示没有AI数据
               score_look: null,
               score_breast: null,
@@ -1178,9 +1189,8 @@
               avg_score: parseFloat(admin.avg_final_score.toFixed(1)),
               review_count: admin.review_count,
               has_admin_review: true,
-              has_ai_score: false,  // 明确标记没有AI评分
-              source: '实测评分',
-              collection_count: 0
+              has_ai_score: false,
+              source: '实测评分'
             });
           }
         });
@@ -1274,7 +1284,7 @@
 
       document.getElementById('detailName').textContent = teacher.teacher_name;
       document.getElementById('detailId').querySelector('span').textContent = teacher.teacher_id;
-      document.getElementById('detailCount').textContent = `${teacher.review_count}条评价 · 采集${teacher.collection_count}条`;
+      document.getElementById('detailCount').textContent = `${teacher.review_count}条实测 · ${teacher.collection_count || 0}条采集 · ¥${teacher.price || '-'}`;
 
       // 加载实测评分
       try {

@@ -1092,10 +1092,11 @@
     // 加载数据
     async function loadData() {
       try {
-        // 并行加载AI评分、分组管理评分和采集记录
-        const [aiScores, adminGrouped, collections] = await Promise.all([
+        // 并行加载AI评分、分组管理评分、详细管理评分和采集记录
+        const [aiScores, adminGrouped, adminDetails, collections] = await Promise.all([
           apiRequest(API_BASE + '/api/ai-scores'),
           apiRequest(API_BASE + '/api/admin-scores/grouped'),
+          apiRequest(API_BASE + '/api/admin-scores'),
           apiRequest(API_BASE + '/api/collections')
         ]);
 
@@ -1103,6 +1104,21 @@
         const collectionCountMap = {};
         collections.forEach(col => {
           collectionCountMap[col.teacher_id] = (collectionCountMap[col.teacher_id] || 0) + 1;
+        });
+
+        // 从详细管理评分中提取每个教师的最新基本信息（价格、年龄、身高、体重、胸围）
+        const adminBaseInfoMap = {};
+        adminDetails.forEach(record => {
+          const tid = record.teacher_id;
+          // 只保存有值的字段，优先保留已有数据
+          if (!adminBaseInfoMap[tid]) {
+            adminBaseInfoMap[tid] = {};
+          }
+          if (record.price !== null && record.price !== undefined) adminBaseInfoMap[tid].price = record.price;
+          if (record.age !== null && record.age !== undefined) adminBaseInfoMap[tid].age = record.age;
+          if (record.height !== null && record.height !== undefined) adminBaseInfoMap[tid].height = record.height;
+          if (record.weight !== null && record.weight !== undefined) adminBaseInfoMap[tid].weight = record.weight;
+          if (record.bust !== null && record.bust !== undefined) adminBaseInfoMap[tid].bust = record.bust;
         });
 
         // 将分组管理评分转为Map
@@ -1124,12 +1140,20 @@
         allData = aiScores.map(ai => {
           const admin = adminMap[ai.teacher_id];
           const collectionCount = collectionCountMap[ai.teacher_id] || 0;
+          const baseInfo = adminBaseInfoMap[ai.teacher_id] || {};
 
           if (admin && admin.review_count > 0) {
             // 有管理评分，保留AI原始数据，同时添加实测数据用于显示
+            // 基本信息优先使用实测数据，其次使用AI数据
             return {
               ...ai,
               collection_count: collectionCount,
+              // 基本信息：优先使用实测数据，其次AI数据
+              price: baseInfo.price || ai.price || null,
+              age: baseInfo.age || ai.age || null,
+              height: baseInfo.height || ai.height || null,
+              weight: baseInfo.weight || ai.weight || null,
+              bust: baseInfo.bust || ai.bust || null,
               // 排行榜显示用实测评分
               display_score_look: admin.avg_score_look.toFixed(1),
               display_score_breast: admin.avg_score_breast.toFixed(1),
@@ -1165,14 +1189,15 @@
         adminGrouped.forEach(admin => {
           if (!aiScores.find(ai => ai.teacher_id === admin.teacher_id)) {
             const collectionCount = collectionCountMap[admin.teacher_id] || 0;
+            const baseInfo = adminBaseInfoMap[admin.teacher_id] || {};
             allData.push({
               teacher_id: admin.teacher_id,
               teacher_name: admin.teacher_name,
-              age: null,
-              height: null,
-              weight: null,
-              price: null,
-              bust: null,
+              age: baseInfo.age || null,
+              height: baseInfo.height || null,
+              weight: baseInfo.weight || null,
+              price: baseInfo.price || null,
+              bust: baseInfo.bust || null,
               collection_count: collectionCount,
               // AI评分字段设为null表示没有AI数据
               score_look: null,
@@ -1214,15 +1239,15 @@
     function renderRanking() {
       const list = document.getElementById('rankingList');
       
-      // 按价格筛选
+      // 按价格筛选（4及以下=<=4, 5=5, 6及以上=>=6）
       let filtered = allData;
       if (currentRange !== 'all') {
         filtered = allData.filter(t => {
           const price = parseInt(t.price) || 0;
           switch(currentRange) {
-            case '4-': return price < 4;
+            case '4-': return price <= 4;
             case '5': return price === 5;
-            case '6+': return price > 6;
+            case '6+': return price >= 6;
             default: return true;
           }
         });

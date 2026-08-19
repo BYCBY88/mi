@@ -106,8 +106,8 @@
     /* 价格分档标签 */
     .range-tabs {
       display: flex;
-      gap: 8px;
-      padding: 12px 16px;
+      gap: 6px;
+      padding: 10px 12px;
       background: white;
       border-bottom: 1px solid #e5e5e5;
       overflow-x: auto;
@@ -116,31 +116,31 @@
 
     .range-tab {
       flex: 1;
-      min-width: 70px;
-      padding: 8px 12px;
+      min-width: 60px;
+      padding: 6px 10px;
       text-align: center;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
       color: #666;
       background: #f5f5f5;
-      border-radius: 20px;
+      border-radius: 16px;
       cursor: pointer;
       transition: all 0.2s;
       white-space: nowrap;
     }
 
     .search-box {
-      padding: 12px 16px;
+      padding: 10px 12px;
       background: white;
       border-bottom: 1px solid #e5e5e5;
     }
 
     .search-box input {
       width: 100%;
-      padding: 10px 16px;
+      padding: 8px 14px;
       border: 1px solid #e5e5e5;
-      border-radius: 20px;
-      font-size: 14px;
+      border-radius: 18px;
+      font-size: 13px;
       outline: none;
       transition: border-color 0.2s;
     }
@@ -158,17 +158,18 @@
     .ranking-list {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
+      padding: 0 12px;
     }
 
     .ranking-item {
       background: white;
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 10px;
+      padding: 12px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      gap: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
       cursor: pointer;
       transition: all 0.2s;
       position: relative;
@@ -207,14 +208,14 @@
     }
 
     .rank-badge {
-      width: 44px;
-      height: 44px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 12px;
       flex-shrink: 0;
     }
 
@@ -229,25 +230,26 @@
     }
 
     .teacher-name {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
-      margin: 0 0 4px 0;
+      margin: 0 0 3px 0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .teacher-count {
-      font-size: 12px;
+      font-size: 11px;
       color: #666;
     }
 
     .teacher-scores {
-      font-size: 11px;
+      font-size: 10px;
       color: #888;
-      margin-top: 4px;
+      margin-top: 3px;
       display: flex;
-      gap: 8px;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
     .teacher-scores span {
@@ -881,6 +883,7 @@
       <div class="range-tab" data-range="4-">4及以下</div>
       <div class="range-tab" data-range="5">5</div>
       <div class="range-tab" data-range="6+">6及以上</div>
+      <div class="range-tab" data-range="unmeasured">未实测</div>
     </div>
     <div class="range-stats" id="rangeStats" style="text-align: center; padding: 8px 16px; font-size: 13px; color: #666; background: #f5f5f5;">共 0 位老师</div>
     <div class="search-box">
@@ -1240,7 +1243,7 @@
     function renderRanking() {
       const list = document.getElementById('rankingList');
       
-      // 按价格筛选（4及以下=<=4, 5=5, 6及以上=>=6）
+      // 按价格筛选（4及以下=<=4, 5=5, 6及以上=>=6, 未实测=只有AI评分没有实测评分）
       let filtered = allData;
       if (currentRange !== 'all') {
         filtered = allData.filter(t => {
@@ -1249,6 +1252,7 @@
             case '4-': return price <= 4;
             case '5': return price === 5;
             case '6+': return price >= 6;
+            case 'unmeasured': return !t.has_admin_review && t.has_ai_score;
             default: return true;
           }
         });

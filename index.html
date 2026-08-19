@@ -1085,25 +1085,32 @@
           const admin = adminMap[ai.teacher_id];
 
           if (admin && admin.review_count > 0) {
-            // 有管理评分，使用管理评分的平均分
+            // 有管理评分，保留AI原始数据，同时添加实测数据用于显示
             return {
               ...ai,
-              score_look: admin.avg_score_look.toFixed(1),
-              score_breast: admin.avg_score_breast.toFixed(1),
-              score_service: admin.avg_score_service.toFixed(1),
-              final_score: admin.avg_final_score.toFixed(1),
+              // 排行榜显示用实测评分
+              display_score_look: admin.avg_score_look.toFixed(1),
+              display_score_breast: admin.avg_score_breast.toFixed(1),
+              display_score_service: admin.avg_score_service.toFixed(1),
+              display_final_score: admin.avg_final_score.toFixed(1),
               avg_score: parseFloat(admin.avg_final_score.toFixed(1)),
               review_count: admin.review_count,
               has_admin_review: true,
+              has_ai_score: true,  // 有AI评分
               source: '实测评分'
             };
           } else {
             // 无管理评分，使用AI评分
             return {
               ...ai,
+              display_score_look: ai.score_look,
+              display_score_breast: ai.score_breast,
+              display_score_service: ai.score_service,
+              display_final_score: ai.final_score,
               avg_score: ai.final_score,
               review_count: 0,
               has_admin_review: false,
+              has_ai_score: true,  // 有AI评分
               source: 'AI评分'
             };
           }
@@ -1120,14 +1127,21 @@
               weight: null,
               price: null,
               bust: null,
-              score_look: admin.avg_score_look.toFixed(1),
-              score_breast: admin.avg_score_breast.toFixed(1),
-              score_figure: '-',
-              score_service: admin.avg_score_service.toFixed(1),
-              final_score: admin.avg_final_score.toFixed(1),
+              // AI评分字段设为null表示没有AI数据
+              score_look: null,
+              score_breast: null,
+              score_figure: null,
+              score_service: null,
+              final_score: null,
+              // 显示用实测评分
+              display_score_look: admin.avg_score_look.toFixed(1),
+              display_score_breast: admin.avg_score_breast.toFixed(1),
+              display_score_service: admin.avg_score_service.toFixed(1),
+              display_final_score: admin.avg_final_score.toFixed(1),
               avg_score: parseFloat(admin.avg_final_score.toFixed(1)),
               review_count: admin.review_count,
               has_admin_review: true,
+              has_ai_score: false,  // 明确标记没有AI评分
               source: '实测评分',
               collection_count: 0
             });
@@ -1322,8 +1336,8 @@
 
     // 渲染AI评分卡片
     async function renderAICard(teacher) {
-      // 如果没有AI评分数据，显示空状态
-      if (!teacher.score_look && !teacher.score_breast && !teacher.final_score) {
+      // 如果没有AI评分数据（has_ai_score为false或final_score为null），显示空状态
+      if (teacher.has_ai_score === false || teacher.final_score === null || teacher.final_score === undefined) {
         return '<div class="eval-card"><div class="empty-state">暂无AI评分数据</div></div>';
       }
 

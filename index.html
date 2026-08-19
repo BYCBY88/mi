@@ -915,6 +915,13 @@
     <div id="reviewForm" class="review-form">
       <h3 style="margin-bottom: 16px; font-size: 16px;">添加实测评分</h3>
       <div class="form-group">
+        <label class="form-label">教师信息（不可修改）</label>
+        <div class="teacher-info-readonly" id="reviewTeacherInfo" style="background: #f5f5f5; padding: 12px; border-radius: 8px; font-size: 14px; color: #666;">
+          <div style="font-weight: 600; color: #333; margin-bottom: 4px;" id="reviewTeacherName">-</div>
+          <div style="font-size: 12px;" id="reviewTeacherId">ID: -</div>
+        </div>
+      </div>
+      <div class="form-group">
         <label class="form-label">评估人</label>
         <input type="text" class="form-input" id="reviewEvaluator" placeholder="请输入评估人名称">
       </div>
@@ -997,7 +1004,7 @@
   <div id="passwordModal" class="modal-overlay">
     <div class="modal">
       <h3 class="modal-title">请输入管理密码</h3>
-      <input type="password" class="modal-input" id="passwordInput" placeholder="请输入密码">
+      <input type="password" class="modal-input" id="passwordInput" placeholder="请输入密码" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')">
       <div class="modal-buttons">
         <button class="modal-btn cancel" onclick="hidePasswordModal()">取消</button>
         <button class="modal-btn confirm" onclick="verifyPassword()">确认</button>
@@ -1112,6 +1119,7 @@
 
           if (admin && admin.review_count > 0) {
             // 有管理评分，保留AI原始数据，同时添加实测数据用于显示
+            // 基本信息优先使用AI数据，如果AI数据为空则尝试从管理评分获取
             return {
               ...ai,
               // 排行榜显示用实测评分
@@ -1345,10 +1353,10 @@
           </div>
 
           <div class="score-bars-compact">
-            ${renderScoreBar('颜值', review.score_look, 'score_look')}
-            ${renderScoreBar('胸部', review.score_breast, 'score_breast')}
-            ${renderScoreBar('身材', review.score_figure, 'score_figure')}
-            ${renderScoreBar('服务', review.score_service, 'score_service')}
+            ${renderScoreBar('颜值', review.score_look || 0, 'score_look')}
+            ${renderScoreBar('胸部', review.score_breast || 0, 'score_breast')}
+            ${renderScoreBar('身材', review.score_figure || 0, 'score_figure')}
+            ${renderScoreBar('服务', review.score_service || 0, 'score_service')}
           </div>
 
           <div class="attrs-grid compact">
@@ -1567,7 +1575,7 @@
         const result = await response.json();
         if (result.success && result.valid) {
           hidePasswordModal();
-          showReviewForm();
+          await showReviewForm();
         } else {
           showToast('密码错误');
         }
@@ -1578,23 +1586,42 @@
     }
 
     // 测评表单
-    function showReviewForm() {
+    async function showReviewForm() {
       document.getElementById('reviewForm').classList.add('active');
 
       // 从当前教师数据中获取默认值（优先使用管理评分，其次AI评分）
       const teacher = currentTeacher;
       if (teacher) {
+        // 显示教师信息（只读）
+        document.getElementById('reviewTeacherName').textContent = teacher.teacher_name;
+        document.getElementById('reviewTeacherId').textContent = 'ID: ' + teacher.teacher_id;
+
         // 优先使用display_字段（实测评分），其次使用原始字段（AI评分）
         document.getElementById('scoreLook').value = teacher.display_score_look || teacher.score_look || '8';
         document.getElementById('scoreBreast').value = teacher.display_score_breast || teacher.score_breast || '8';
         document.getElementById('scoreFigure').value = teacher.display_score_figure || teacher.score_figure || '8';
         document.getElementById('scoreService').value = teacher.display_score_service || teacher.score_service || '8';
+
+        // 尝试从已有管理评分中获取基本信息
+        let baseInfo = { age: teacher.age, height: teacher.height, weight: teacher.weight, price: teacher.price, bust: teacher.bust };
+
+        // 如果有管理评分，获取最新的那条记录的基本信息
+        if (teacher.has_admin_review && adminReviews.length > 0) {
+          // 使用最新的管理评分记录的基本信息
+          const latestReview = adminReviews[0]; // 已按时间倒序排列
+          baseInfo.age = latestReview.age || baseInfo.age;
+          baseInfo.height = latestReview.height || baseInfo.height;
+          baseInfo.weight = latestReview.weight || baseInfo.weight;
+          baseInfo.price = latestReview.price || baseInfo.price;
+          baseInfo.bust = latestReview.bust || baseInfo.bust;
+        }
+
         // 基本信息
-        document.getElementById('teacherAge').value = teacher.age || '';
-        document.getElementById('teacherHeight').value = teacher.height || '';
-        document.getElementById('teacherWeight').value = teacher.weight || '';
-        document.getElementById('teacherPrice').value = teacher.price || '';
-        document.getElementById('teacherBust').value = teacher.bust || '';
+        document.getElementById('teacherAge').value = baseInfo.age || '';
+        document.getElementById('teacherHeight').value = baseInfo.height || '';
+        document.getElementById('teacherWeight').value = baseInfo.weight || '';
+        document.getElementById('teacherPrice').value = baseInfo.price || '';
+        document.getElementById('teacherBust').value = baseInfo.bust || '';
       }
 
       document.getElementById('reviewEvaluator').focus();

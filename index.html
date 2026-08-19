@@ -882,6 +882,7 @@
       <div class="range-tab" data-range="5">5</div>
       <div class="range-tab" data-range="6+">6及以上</div>
     </div>
+    <div class="range-stats" id="rangeStats" style="text-align: center; padding: 8px 16px; font-size: 13px; color: #666; background: #f5f5f5;">共 0 位老师</div>
     <div class="search-box">
       <input type="text" id="searchInput" placeholder="搜索名字或ID..." oninput="handleSearch()">
     </div>
@@ -1262,6 +1263,13 @@
         );
       }
 
+      // 显示榜单统计
+      const totalTeachers = filtered.length;
+      const statsEl = document.getElementById('rangeStats');
+      if (statsEl) {
+        statsEl.textContent = `共 ${totalTeachers} 位老师`;
+      }
+
       if (filtered.length === 0) {
         list.innerHTML = '<div class="empty-state">暂无数据</div>';
         return;
@@ -1280,12 +1288,13 @@
             <div class="rank-badge ${rankClass}">${rankIcon}</div>
             <div class="teacher-info">
               <div class="teacher-name">${teacher.teacher_name}</div>
-              <div class="teacher-count">${teacher.review_count}条评价 · ¥${teacher.price || '-'}</div>
+              <div class="teacher-count">${teacher.review_count}条评价 · ${teacher.collection_count || 0}条采集 · ¥${teacher.price || '-'}</div>
               <div class="teacher-scores">
                 <span>颜值${teacher.display_score_look || teacher.score_look || '-'}</span>
                 <span>胸${teacher.display_score_breast || teacher.score_breast || '-'}</span>
                 <span>身材${teacher.display_score_figure || teacher.score_figure || '-'}</span>
                 <span>服务${teacher.display_score_service || teacher.score_service || '-'}</span>
+                <span>胸围${teacher.bust || '-'}</span>
               </div>
             </div>
             <div class="teacher-score">

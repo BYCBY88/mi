@@ -1,869 +1,1569 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>测评</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        .container { max-width: 800px; margin: 0 auto; }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 18px 20px;
-            border-radius: 14px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap:12px;
-        }
-        .header-left-btn {
-            background: rgba(255,255,255,0.32);
-            border: 2px solid rgba(255,255,255,0.6);
-            box-shadow: 0 0 12px rgba(255,255,255,0.35);
-            color: white;
-            font-weight:bold;
-            padding: 12px 24px;
-            border-radius: 16px;
-            cursor: pointer;
-            font-size: 18px;
-            text-decoration: none;
-            white-space: nowrap;
-            transition: 0.25s ease;
-        }
-        .header-left-btn:hover {
-            background: rgba(255,255,255,0.45);
-            box-shadow: 0 0 18px rgba(255,255,255,0.5);
-        }
-        .header-middle{
-            display:flex;
-            align-items:center;
-            gap:12px;
-        }
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap:10px;
-            font-size:15px;
-        }
-        .user-info button {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            padding:7px 14px;
-            border-radius:22px;
-            cursor: pointer;
-            font-size:14px;
-        }
-        .user-info button:hover{
-            background:rgba(255,255,255,0.32);
-        }
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .card-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #333;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 8px;
-        }
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-        .form-row-2 {
-            display: grid;
-            grid-template-columns: repeat(2,1fr);
-            gap:15px;
-        }
-        .form-row-3 {
-            display: grid;
-            grid-template-columns: repeat(3,1fr);
-            gap:12px;
-        }
-        @media (max-width: 600px) {
-            .header {
-                padding:14px 12px;
-                flex-wrap:wrap;
-            }
-            .header-left-btn {
-                padding:6px 12px;
-                font-size:13px;
-            }
-            .user-info{
-                font-size:13px;
-            }
-            .user-info button{
-                padding:5px 10px;
-                font-size:12px;
-            }
-            .form-grid { display:none; }
-            .form-row-2 { grid-template-columns: repeat(2,1fr); }
-            .form-row-3 { grid-template-columns: repeat(3,1fr); }
-        }
-        .pc-form { display: grid; grid-template-columns: 1fr 1fr; gap:15px; }
-        .mobile-form { display:none; }
-        @media (max-width:600px){
-            .pc-form { display:none; }
-            .mobile-form { display:block; }
-        }
-        .form-group { margin-bottom: 15px; }
-        .form-group label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 5px;
-            color: #555;
-        }
-        .form-group label .required { color: #e74c3c; }
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        .form-group textarea { resize: vertical; min-height: 80px; }
-        .score-item { margin-bottom: 20px; }
-        .score-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .score-label { font-weight: 500; color: #555; }
-        .score-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #667eea;
-        }
-        input[type="range"] {
-            width: 100%;
-            height: 8px;
-            border-radius: 4px;
-            background: linear-gradient(to right, #ff6b6b, #feca57, #48dbfb, #1dd1a1);
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #667eea;
-            cursor: pointer;
-        }
-        .score-desc {
-            margin-top: 8px;
-            padding: 8px 12px;
-            background: #fff3cd;
-            border-radius: 6px;
-            font-size: 12px;
-            color: #856404;
-        }
-        .option-group { margin-bottom: 15px; }
-        .option-group label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #555;
-        }
-        .option-buttons {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-        .option-btn {
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            background: white;
-            cursor: pointer;
-            text-align: center;
-            font-size: 13px;
-            transition: all 0.3s;
-        }
-        .option-btn:hover { border-color: #667eea; }
-        .option-btn.active {
-            border-color: #667eea;
-            background: #667eea;
-            color: white;
-        }
-        .option-btn.active.positive {
-            border-color: #1dd1a1;
-            background: #1dd1a1;
-        }
-        .option-btn.active.negative {
-            border-color: #ff6b6b;
-            background: #ff6b6b;
-        }
-        .summary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-        }
-        .summary-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .summary-score {
-            font-size: 36px;
-            font-weight: bold;
-        }
-        .summary-rating {
-            font-size: 24px;
-            background: rgba(255,255,255,0.2);
-            padding: 5px 15px;
-            border-radius: 20px;
-        }
-        .summary-details {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            font-size: 13px;
-        }
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: opacity 0.3s;
-        }
-        .submit-btn:hover { opacity: 0.9; }
-        .submit-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-        }
-        .modal h3 { margin-bottom: 15px; color: #333; }
-        .modal input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 16px;
-            text-align: center;
-        }
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .modal-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .modal-btn.primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .modal-btn.secondary {
-            background: #f0f0f0;
-            color: #555;
-        }
-        .hidden { display: none !important; }
-        .toast {
-            position: fixed;
-            top:20px;
-            left:50%;
-            transform:translateX(-50%);
-            max-width:calc(100% - 40px);
-            padding: 12px 20px;
-            border-radius: 8px;
-            color: white;
-            font-size: 14px;
-            z-index: 1001;
-            animation: slideIn 0.3s ease;
-        }
-        .toast.success { background: #1dd1a1; }
-        .toast.error { background: #ff6b6b; }
-        @keyframes slideIn {
-            from { opacity: 0; transform:translateX(-50%) translateY(-10px); }
-            to { opacity: 1; transform:translateX(-50%) translateY(0); }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教师评分排行榜</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #f5f5f7;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+
+    /* 头部 */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #e5e5e5;
+      padding: 16px;
+    }
+
+    .header-content {
+      max-width: 480px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+    }
+
+    .header-title h1 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .header-title p {
+      font-size: 12px;
+      color: #666;
+      margin: 0;
+    }
+
+    /* 容器 */
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* 加载状态 */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #e5e5e5;
+      border-top-color: #ff6b6b;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* 错误状态 */
+    .error {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .error button {
+      margin-top: 16px;
+      padding: 10px 24px;
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    /* 价格分档标签 */
+    .range-tabs {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      background: white;
+      border-bottom: 1px solid #e5e5e5;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .range-tab {
+      flex: 1;
+      min-width: 60px;
+      padding: 8px 12px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: #666;
+      background: #f5f5f5;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .range-tab.active {
+      background: #ff6b6b;
+      color: white;
+    }
+
+    /* 排行榜列表 */
+    .ranking-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .ranking-item {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .ranking-item:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
+    }
+
+    .ranking-item:active {
+      transform: scale(0.98);
+    }
+
+    /* 已测评标识 */
+    .ranking-item.has-review {
+      background: linear-gradient(135deg, #fff8f8, #ffffff);
+      border: 1px solid #ffd4d4;
+    }
+
+    .review-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 20px;
+      height: 20px;
+      background: #4caf50;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+    }
+
+    .rank-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .rank-1 { background: #fff8e1; color: #f9a825; }
+    .rank-2 { background: #f5f5f5; color: #757575; }
+    .rank-3 { background: #fff3e0; color: #e65100; }
+    .rank-other { background: #f5f5f5; color: #999; }
+
+    .teacher-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .teacher-name {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 4px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .teacher-count {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .teacher-scores {
+      font-size: 11px;
+      color: #888;
+      margin-top: 4px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .teacher-scores span {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .teacher-score {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .score-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #4caf50;
+    }
+
+    .score-label {
+      font-size: 11px;
+      color: #999;
+    }
+
+    .score-source {
+      font-size: 10px;
+      color: #ff6b6b;
+      background: #fff5f5;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+
+    .arrow {
+      color: #ff6b6b;
+      font-size: 20px;
+      margin-left: 4px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff5f5;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .ranking-item:hover .arrow {
+      background: #ff6b6b;
+      color: white;
+    }
+
+    /* 详情页 */
+    .detail-page {
+      display: none;
+      min-height: 100vh;
+      background: #f5f5f7;
+    }
+
+    .detail-page.active {
+      display: block;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 16px;
+      background: none;
+      border: none;
+      color: #666;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .back-btn:hover {
+      color: #333;
+    }
+
+    /* 教师卡片 */
+    .teacher-card {
+      background: linear-gradient(135deg, #fff5f5, #ffeeee);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 0 16px 12px;
+      text-align: center;
+    }
+
+    .teacher-card h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0 0 4px 0;
+    }
+
+    .teacher-card .teacher-id {
+      font-size: 12px;
+      color: #999;
+      margin: 2px 0 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      padding: 2px 8px;
+      background: rgba(0,0,0,0.05);
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .teacher-card .teacher-id:hover {
+      background: rgba(0,0,0,0.1);
+    }
+
+    .teacher-card .teacher-id .copy-icon {
+      font-size: 10px;
+      opacity: 0.6;
+    }
+
+    .teacher-card .total-count {
+      font-size: 13px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    /* 添加测评按钮 */
+    .add-review-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 12px;
+      padding: 8px 16px;
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .add-review-btn:hover {
+      background: #ee5a5a;
+      transform: translateY(-1px);
+    }
+
+    /* 标签切换 */
+    .tab-switcher {
+      display: flex;
+      gap: 8px;
+      padding: 0 16px 12px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: #666;
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: #ff6b6b;
+      color: white;
+      border-color: #ff6b6b;
+    }
+
+    /* 评价卡片 */
+    .eval-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin: 0 16px 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .eval-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f0f0f0;
+      margin-bottom: 12px;
+    }
+
+    .eval-header.compact {
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+    }
+
+    .eval-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .eval-score-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .eval-score-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #ee5a5a;
+    }
+
+    .stars {
+      display: flex;
+      gap: 2px;
+    }
+
+    .star {
+      color: #ffc107;
+      font-size: 16px;
+    }
+
+    .star.empty {
+      color: #e0e0e0;
+    }
+
+    /* 评分条 */
+    .score-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .score-bars-compact .score-bar {
+      margin-bottom: 2px;
+    }
+
+    .score-bar-label {
+      width: 40px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .score-bar-track {
+      flex: 1;
+      height: 4px;
+      background: #f0f0f0;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ff6b6b, #ee5a5a);
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    .score-bar-value {
+      width: 32px;
+      text-align: right;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .score-desc-text {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 8px;
+      padding-left: 48px;
+    }
+
+    /* 属性网格 */
+    .attrs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid #f0f0f0;
+      margin-top: 12px;
+    }
+
+    .attrs-grid.compact {
+      gap: 6px;
+      padding-top: 8px;
+      margin-top: 8px;
+    }
+
+    .attr-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+
+    .attr-label {
+      color: #666;
+    }
+
+    .attr-value {
+      font-weight: 500;
+    }
+
+    .attr-full {
+      grid-column: span 2;
+    }
+
+    /* 评价内容 */
+    .eval-content {
+      padding-top: 12px;
+      border-top: 1px solid #f0f0f0;
+      margin-top: 12px;
+    }
+
+    .eval-content.compact {
+      padding-top: 8px;
+      margin-top: 8px;
+    }
+
+    .eval-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    .eval-meta {
+      font-size: 12px;
+      color: #999;
+      margin-top: 8px;
+    }
+
+    /* 采集记录 */
+    .collection-item {
+      padding: 12px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .collection-text {
+      font-size: 14px;
+      color: #333;
+    }
+
+    .collection-meta {
+      font-size: 11px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .collection-status {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-left: 8px;
+    }
+
+    .collection-status.processed {
+      background: #e8f5e9;
+      color: #4caf50;
+    }
+
+    .collection-status.pending {
+      background: #fff3e0;
+      color: #ff9800;
+    }
+
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+
+    /* 翻页控制 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+    }
+
+    .page-btn {
+      padding: 8px 16px;
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .page-btn:hover:not(:disabled) {
+      background: #f5f5f5;
+    }
+
+    .page-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .page-info {
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* Toast提示 */
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    /* 密码弹窗 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      width: 90%;
+      max-width: 360px;
+      animation: modalIn 0.3s ease;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 16px;
+      outline: none;
+    }
+
+    .modal-input:focus {
+      border-color: #ff6b6b;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-btn.cancel {
+      background: #f5f5f5;
+      border: none;
+      color: #666;
+    }
+
+    .modal-btn.confirm {
+      background: #ff6b6b;
+      border: none;
+      color: white;
+    }
+
+    /* 测评表单 */
+    .review-form {
+      display: none;
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin: 0 16px 16px;
+    }
+
+    .review-form.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      border-color: #ff6b6b;
+    }
+
+    .form-textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .score-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .score-input-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .score-input-item label {
+      font-size: 13px;
+      color: #666;
+      width: 50px;
+    }
+
+    .score-input-item input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .form-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .form-btn.cancel {
+      background: #f5f5f5;
+      border: none;
+      color: #666;
+    }
+
+    .form-btn.submit {
+      background: #ff6b6b;
+      border: none;
+      color: white;
+    }
+
+    .form-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
 <body>
+  <!-- 首页 -->
+  <div id="homePage" class="home-page">
+    <div class="header">
+      <div class="header-content">
+        <div class="header-icon">📊</div>
+        <div class="header-title">
+          <h1>教师评分排行榜</h1>
+          <p>基于AI与管理评分的综合排名</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="range-tabs">
+      <div class="range-tab active" data-range="all">全部</div>
+      <div class="range-tab" data-range="0-500">500以下</div>
+      <div class="range-tab" data-range="500-800">500-800</div>
+      <div class="range-tab" data-range="800-1000">800-1000</div>
+      <div class="range-tab" data-range="1000+">1000以上</div>
+    </div>
+
     <div class="container">
-        <div class="header">
-            <a class="header-left-btn" href="https://bycby88.github.io/CSB/" target="_blank">排行榜</a>
-            <div class="header-middle">
-                <div class="user-info">
-                    <span>测评人：<strong id="nickname-display">用户</strong></span>
-                    <button onclick="showNicknameModal()">昵称修改</button>
-                </div>
-            </div>
+      <div id="rankingList" class="ranking-list">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>加载中...</p>
         </div>
-        <form id="testForm" onsubmit="handleSubmit(event)">
-            <div class="card">
-                <div class="card-title">📋 基本信息</div>
-                <div class="pc-form">
-                    <div class="form-group">
-                        <label>老师ID <span class="required"></span></label>
-                        <input type="text" id="teacherId" placeholder="如@s204386" required autocomplete="off">
-                    </div>
-                    <div class="form-group">
-                        <label>老师姓名 <span class="required"></span></label>
-                        <input type="text" id="teacherName" placeholder="输入姓名" required autocomplete="off">
-                    </div>
-                    <div class="form-group">
-                        <label>年龄 <span class="required"></span></label>
-                        <input type="number" id="age" min="18" max="60" placeholder="18-60" required autocomplete="off">
-                    </div>
-                    <div class="form-group">
-                        <label>单价 <span class="required"></span></label>
-                        <input type="number" id="price" min="3" max="10" placeholder="3-10" required autocomplete="off">
-                    </div>
-                    <div class="form-group">
-                        <label>身高(cm) <span class="required"></span></label>
-                        <input type="number" id="height" min="140" max="200" placeholder="140-200" required autocomplete="off">
-                    </div>
-                    <div class="form-group">
-                        <label>体重(kg) <span class="required"></span></label>
-                        <input type="number" id="weight" min="40" max="80" step="0.1" placeholder="40-80" required autocomplete="off">
-                    </div>
-                    <div class="form-group">
-                        <label>胸围 <span class="required"></span></label>
-                        <select id="bust" required>
-                            <option value="">请选择</option>
-                            <option value="A-">A-</option>
-                            <option value="A">A</option>
-                            <option value="A+">A+</option>
-                            <option value="B-">B-</option>
-                            <option value="B">B</option>
-                            <option value="B+">B+</option>
-                            <option value="C">C</option>
-                            <option value="D">D</option>
-                            <option value="E">E</option>
-                            <option value="F">F</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="mobile-form">
-                    <div class="form-row-2">
-                        <div class="form-group">
-                            <label>老师ID <span class="required"></span></label>
-                            <input type="text" id="teacherIdMobile" placeholder="如@s204386" required autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label>老师姓名 <span class="required"></span></label>
-                            <input type="text" id="teacherNameMobile" placeholder="输入姓名" required autocomplete="off">
-                        </div>
-                    </div>
-                    <div class="form-row-2">
-                        <div class="form-group">
-                            <label>单价 <span class="required"></span></label>
-                            <input type="number" id="priceMobile" min="3" max="10" placeholder="3-10" required autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label>胸围 <span class="required"></span></label>
-                            <select id="bustMobile" required>
-                                <option value="">请选择</option>
-                                <option value="A-">A-</option>
-                                <option value="A">A</option>
-                                <option value="A+">A+</option>
-                                <option value="B-">B-</option>
-                                <option value="B">B</option>
-                                <option value="B+">B+</option>
-                                <option value="C">C</option>
-                                <option value="D">D</option>
-                                <option value="E">E</option>
-                                <option value="F">F</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row-3">
-                        <div class="form-group">
-                            <label>年龄 <span class="required"></span></label>
-                            <input type="number" id="ageMobile" min="18" max="60" placeholder="18‑60" required autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label>身高(cm) <span class="required"></span></label>
-                            <input type="number" id="heightMobile" min="140" max="200" placeholder="140‑200" required autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label>体重(kg) <span class="required"></span></label>
-                            <input type="number" id="weightMobile" min="40" max="80" step="0.1" placeholder="40‑80" required autocomplete="off">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-title">📊 基础评分（每项权重25%）</div>
-                <div class="score-item">
-                    <div class="score-header">
-                        <span class="score-label">颜值</span>
-                        <span class="score-value" id="lookValue">6分</span>
-                    </div>
-                    <input type="range" id="look" min="1" max="5" step="0.5" value="3" oninput="updateScore('look', this.value)">
-                    <div class="score-desc" id="lookDesc">大众脸，不丑不美</div>
-                </div>
-                <div class="score-item">
-                    <div class="score-header">
-                        <span class="score-label">胸型</span>
-                        <span class="score-value" id="breastValue">6分</span>
-                    </div>
-                    <input type="range" id="breast" min="1" max="5" step="0.5" value="3" oninput="updateScore('breast', this.value)">
-                    <div class="score-desc" id="breastDesc">胸型一般，基本正常</div>
-                </div>
-                <div class="score-item">
-                    <div class="score-header">
-                        <span class="score-label">身材</span>
-                        <span class="score-value" id="figureValue">6分</span>
-                    </div>
-                    <input type="range" id="figure" min="1" max="5" step="0.5" value="3" oninput="updateScore('figure', this.value)">
-                    <div class="score-desc" id="figureDesc">不胖不瘦，正常身材</div>
-                </div>
-                <div class="score-item">
-                    <div class="score-header">
-                        <span class="score-label">服务</span>
-                        <span class="score-value" id="serviceValue">6分</span>
-                    </div>
-                    <input type="range" id="service" min="1" max="5" step="0.5" value="3" oninput="updateScore('service', this.value)">
-                    <div class="score-desc" id="serviceDesc">稍有服务，态度积极</div>
-                </div>
-                <div class="summary">
-                    <div class="summary-header">
-                        <div>
-                            <div style="font-size: 12px; opacity: 0.8;">最终得分</div>
-                            <div class="summary-score" id="finalScore">6.00</div>
-                        </div>
-                    </div>
-                    <div class="summary-details">
-                        <div>基础分：<span id="baseScore">6.00</span></div>
-                        <div>增减分：<span id="extraScore">+0.0</span></div>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-title">➕ 附加项</div>
-                <div class="option-group">
-                    <label>胸型质感</label>
-                    <div class="option-buttons">
-                        <div class="option-btn" data-group="breastNature" data-value="soft" onclick="selectOption(this)">天然柔软</div>
-                        <div class="option-btn" data-group="breastNature" data-value="normal" onclick="selectOption(this)">轻微科技</div>
-                        <div class="option-btn" data-group="breastNature" data-value="hard" onclick="selectOption(this)">帮帮硬</div>
-                    </div>
-                </div>
-                <div class="option-group">
-                    <label>皮肤状态</label>
-                    <div class="option-buttons">
-                        <div class="option-btn" data-group="skin" data-value="smooth" onclick="selectOption(this)">光滑细腻</div>
-                        <div class="option-btn" data-group="skin" data-value="normal" onclick="selectOption(this)">正常</div>
-                        <div class="option-btn" data-group="skin" data-value="rough" onclick="selectOption(this)">粗糙暗沉</div>
-                    </div>
-                </div>
-                <div class="option-group">
-                    <label>声音条件</label>
-                    <div class="option-buttons">
-                        <div class="option-btn" data-group="voice" data-value="pleasant" onclick="selectOption(this)">悦耳动听</div>
-                        <div class="option-btn" data-group="voice" data-value="normal" onclick="selectOption(this)">正常</div>
-                        <div class="option-btn" data-group="voice" data-value="bad" onclick="selectOption(this)">难听刺耳</div>
-                    </div>
-                </div>
-                <div class="option-group">
-                    <label>纹身情况</label>
-                    <div class="option-buttons">
-                        <div class="option-btn" data-group="tattoo" data-value="light" onclick="selectOption(this)">无纹身</div>
-                        <div class="option-btn" data-group="tattoo" data-value="small" onclick="selectOption(this)">小面积</div>
-                        <div class="option-btn" data-group="tattoo" data-value="heavy" onclick="selectOption(this)">大面积</div>
-                    </div>
-                </div>
-                <div class="option-group">
-                    <label>腰腹状态</label>
-                    <div class="option-buttons">
-                        <div class="option-btn" data-group="waist" data-value="tight" onclick="selectOption(this)">紧致</div>
-                        <div class="option-btn" data-group="waist" data-value="flat" onclick="selectOption(this)">平坦</div>
-                        <div class="option-btn" data-group="waist" data-value="belly" onclick="selectOption(this)">小肚子</div>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-title">📝 不足之处与描述</div>
-                <div class="form-group">
-                    <label>不足之处（填写扣0.2分）</label>
-                    <input type="text" id="shortcoming" placeholder="如有明显不足请描述" autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <label>详细描述 <span class="required"></span></label>
-                    <textarea id="description" placeholder="描述老师的其他特点、服务体验等...（最多150字）" maxlength="150" required autocomplete="off"></textarea>
-                    <div style="text-align: right; font-size: 12px; color: #999; margin-top: 5px;">
-                        <span id="descCount">0</span>/150字
-                    </div>
-                </div>
-            </div>
-            <button type="submit" class="submit-btn">✨ 生成报告并提交</button>
-        </form>
+      </div>
     </div>
-    <div class="modal-overlay hidden" id="nicknameModal">
-        <div class="modal">
-            <h3>修改昵称</h3>
-            <input type="text" id="nicknameInput" placeholder="请输入昵称" maxlength="20" autocomplete="off">
-            <div class="modal-buttons">
-                <button class="modal-btn secondary" onclick="closeNicknameModal()">取消</button>
-                <button class="modal-btn primary" onclick="saveNickname()">保存</button>
-            </div>
+  </div>
+
+  <!-- 详情页 -->
+  <div id="detailPage" class="detail-page">
+    <div class="header">
+      <button class="back-btn" onclick="showHome()">← 返回榜单</button>
+    </div>
+
+    <div class="teacher-card">
+      <h2 id="detailName">-</h2>
+      <div class="teacher-id" id="detailId" onclick="copyId()">
+        ID: <span>-</span> 📋
+      </div>
+      <div class="total-count" id="detailCount">-</div>
+      <button class="add-review-btn" onclick="showPasswordModal()">+ 添加管理测评</button>
+    </div>
+
+    <!-- 测评表单 -->
+    <div id="reviewForm" class="review-form">
+      <h3 style="margin-bottom: 16px; font-size: 16px;">添加管理测评</h3>
+      <div class="form-group">
+        <label class="form-label">评估人</label>
+        <input type="text" class="form-input" id="reviewEvaluator" placeholder="请输入评估人名称">
+      </div>
+      <div class="form-group">
+        <label class="form-label">各项评分 (0-10分)</label>
+        <div class="score-inputs">
+          <div class="score-input-item">
+            <label>颜值</label>
+            <input type="number" id="scoreLook" min="0" max="10" step="0.1" value="8">
+          </div>
+          <div class="score-input-item">
+            <label>胸部</label>
+            <input type="number" id="scoreBreast" min="0" max="10" step="0.1" value="8">
+          </div>
+          <div class="score-input-item">
+            <label>身材</label>
+            <input type="number" id="scoreFigure" min="0" max="10" step="0.1" value="8">
+          </div>
+          <div class="score-input-item">
+            <label>服务</label>
+            <input type="number" id="scoreService" min="0" max="10" step="0.1" value="8">
+          </div>
         </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">缺点</label>
+        <input type="text" class="form-input" id="reviewShortcoming" placeholder="请输入缺点（可选）">
+      </div>
+      <div class="form-group">
+        <label class="form-label">评价描述</label>
+        <textarea class="form-textarea" id="reviewDescription" placeholder="请输入详细评价"></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="form-btn cancel" onclick="hideReviewForm()">取消</button>
+        <button class="form-btn submit" onclick="submitReview()">提交测评</button>
+      </div>
     </div>
-    <div class="modal-overlay hidden" id="successModal">
-        <div class="modal">
-            <h3 style="color: #1dd1a1;">✓ 提交成功</h3>
-            <p style="margin: 15px 0; color: #666;">报告已生成并复制到剪贴板</p>
-            <div class="modal-buttons">
-                <button class="modal-btn primary" onclick="copyAgain()">再次复制</button>
-                <button class="modal-btn secondary" onclick="closeSuccessModal()">关闭</button>
-            </div>
-        </div>
+
+    <div class="tab-switcher">
+      <button class="tab-btn active" data-tab="admin">管理评分</button>
+      <button class="tab-btn" data-tab="ai">AI评分</button>
+      <button class="tab-btn" data-tab="collections">采集记录</button>
     </div>
-<script>
-        const state = {
-            nickname: '',
-            scores: { look: 3, breast: 3, figure: 3, service: 3 },
-            options: {
-                breastNature: null,
-                skin: null,
-                voice: null,
-                tattoo: null,
-                waist: null
-            }
-        };
-        const scoreDescs = {
-            look: ['丑', '普通偏下', '大众脸，不丑不美', '好看，有辨识度', '惊艳，素颜能打'],
-            breast: ['胸型塌陷，影响整体美感', '胸型下垂，注意体态调整', '胸型一般，基本正常', '胸型挺拔，形态良好', '胸型完美，形态极佳'],
-            figure: ['太差，没法看', '没腰没臀，平板身材', '不胖不瘦，正常身材', '有腰有臀，曲线明显', '前凸后翘，穿啥都炸'],
-            service: ['态度恶劣，没法沟通', '服务一般，有些机车', '稍有服务，态度积极', '比较专业服务，有特色', '专业服务，体验极佳']
-        };
-        document.addEventListener('DOMContentLoaded', () => {
-            initNickname();
-            updateSummary();
-            document.getElementById('description').addEventListener('input', function() {
-                document.getElementById('descCount').textContent = this.value.length;
-            });
-            document.getElementById('shortcoming').addEventListener('input', updateSummary);
-            const syncList = [
-                ['teacherId','teacherIdMobile'],
-                ['teacherName','teacherNameMobile'],
-                ['age','ageMobile'],
-                ['price','priceMobile'],
-                ['height','heightMobile'],
-                ['weight','weightMobile'],
-                ['bust','bustMobile']
-            ];
-            syncList.forEach(([pcId,mId])=>{
-                const pcEl = document.getElementById(pcId);
-                const mEl = document.getElementById(mId);
-                pcEl.addEventListener('input',()=>{ mEl.value = pcEl.value; });
-                mEl.addEventListener('input',()=>{ pcEl.value = mEl.value; });
-                if(pcEl.tagName==='SELECT') pcEl.addEventListener('change',()=>{ mEl.value = pcEl.value; });
-                if(mEl.tagName==='SELECT') mEl.addEventListener('change',()=>{ pcEl.value = mEl.value; });
-            });
+
+    <div id="tabContent"></div>
+
+    <div class="pagination" id="pagination" style="display: none;">
+      <button class="page-btn" id="prevBtn" onclick="prevReview()">上一条</button>
+      <span class="page-info" id="pageInfo">1 / 1</span>
+      <button class="page-btn" id="nextBtn" onclick="nextReview()">下一条</button>
+    </div>
+  </div>
+
+  <!-- 密码弹窗 -->
+  <div id="passwordModal" class="modal-overlay">
+    <div class="modal">
+      <h3 class="modal-title">请输入管理密码</h3>
+      <input type="password" class="modal-input" id="passwordInput" placeholder="请输入密码">
+      <div class="modal-buttons">
+        <button class="modal-btn cancel" onclick="hidePasswordModal()">取消</button>
+        <button class="modal-btn confirm" onclick="verifyPassword()">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // API配置 - Cloudflare Workers
+    const API_BASE = 'https://by.byg88.biz';
+    
+    // 密码验证已移至后端，通过 /api/verify-password 接口
+
+    // 状态
+    let allData = [];
+    let currentTeacher = null;
+    let currentTab = 'admin';
+    let currentReviewIndex = 0;
+    let adminReviews = [];
+    let currentRange = 'all';
+
+    // 评分描述映射
+    const scoreDescMap = {
+      score_look: {
+        1: '丑', 2: '能看', 3: '一般', 4: '还行', 5: '不错',
+        6: '好看', 7: '很漂亮', 8: '超漂亮', 9: '绝美', 10: '惊艳，素颜能打'
+      },
+      score_breast: {
+        1: '飞机场', 2: '很小', 3: '偏小', 4: '一般', 5: '还行',
+        6: '不错', 7: '很丰满', 8: '超丰满', 9: '极品', 10: '完美，一手握不住'
+      },
+      score_figure: {
+        1: '很胖', 2: '偏胖', 3: '一般', 4: '还行', 5: '匀称',
+        6: '不错', 7: '很好', 8: '超棒', 9: '极品', 10: '完美，前凸后翘'
+      },
+      score_service: {
+        1: '很差', 2: '敷衍', 3: '一般', 4: '还行', 5: '正常',
+        6: '不错', 7: '很好', 8: '超棒', 9: '顶级', 10: '完美，帝王般享受'
+      }
+    };
+
+    // 获取评分描述
+    function getScoreDesc(type, score) {
+      const map = scoreDescMap[type];
+      if (!map) return '';
+      const rounded = Math.round(score);
+      return map[rounded] || '';
+    }
+
+    // 显示Toast
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    // 复制ID
+    function copyId() {
+      if (currentTeacher) {
+        navigator.clipboard.writeText(currentTeacher.teacher_id).then(() => {
+          showToast('ID已复制');
         });
-        function initNickname() {
-            const saved = localStorage.getItem('evaluatornickname');
-            if (saved) {
-                state.nickname = saved;
-            } else {
-                state.nickname = '用户' + Math.floor(Math.random() * 10000);
-                localStorage.setItem('evaluatornickname', state.nickname);
-            }
-            document.getElementById('nickname-display').textContent = state.nickname;
+      }
+    }
+
+    // API请求封装
+    async function apiRequest(url, options = {}) {
+      const res = await fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers
         }
-        function showNicknameModal() {
-            document.getElementById('nicknameInput').value = state.nickname;
-            document.getElementById('nicknameModal').classList.remove('hidden');
-        }
-        function closeNicknameModal() {
-            document.getElementById('nicknameModal').classList.add('hidden');
-        }
-        function saveNickname() {
-            const newNick = document.getElementById('nicknameInput').value.trim();
-            if (newNick) {
-                state.nickname = newNick;
-                localStorage.setItem('evaluatornickname', newNick);
-                document.getElementById('nickname-display').textContent = newNick;
-                closeNicknameModal();
-                showToast('昵称已保存', 'success');
-            }
-        }
-        function updateScore(type, value) {
-            state.scores[type] = parseFloat(value);
-            const displayValue = (parseFloat(value) * 2).toFixed(0);
-            document.getElementById(type + 'Value').textContent = displayValue + '分';
-            const index = Math.min(Math.floor(parseFloat(value) - 0.5), 4);
-            document.getElementById(type + 'Desc').textContent = scoreDescs[type][index];
-            updateSummary();
-        }
-        function selectOption(el) {
-            const group = el.dataset.group;
-            const value = el.dataset.value;
-            document.querySelectorAll(`[data-group="${group}"]`).forEach(btn => {
-                btn.classList.remove('active', 'positive', 'negative');
-            });
-            el.classList.add('active');
-            if (el.textContent.includes('+')) el.classList.add('positive');
-            if (el.textContent.includes('-')) el.classList.add('negative');
-            state.options[group] = value;
-            updateSummary();
-        }
-        function validateExtraOptions(){
-            const requiredExtra = [
-                { key: 'breastNature', label: '胸型质感' },
-                { key: 'skin', label: '皮肤状态' },
-                { key: 'voice', label: '声音条件' },
-                { key: 'tattoo', label: '纹身情况' },
-                { key: 'waist', label: '腰腹状态' }
-            ];
-            for(const item of requiredExtra){
-                if(!state.options[item.key]){
-                    showToast(`请选择【${item.label}】`, 'error');
-                    return false;
-                }
-            }
-            return true;
-        }
-        function calculateScore() {
-            const look10 = state.scores.look * 2;
-            const breast10 = state.scores.breast * 2;
-            const figure10 = state.scores.figure * 2;
-            const service10 = state.scores.service * 2;
-            const base = (look10 + breast10 + figure10 + service10) / 4;
-            let extra = 0;
-            if (state.options.breastNature === 'soft') extra += 0.2;
-            if (state.options.breastNature === 'hard') extra -= 0.2;
-            const bust = document.getElementById('bust').value;
-            if (bust === 'A' || bust === 'A-') extra -= 0.4;
-            else if (bust === 'B-' || bust === 'A+') extra -= 0.2;
-            if (document.getElementById('shortcoming').value.trim()) extra -= 0.2;
-            if (state.options.skin === 'smooth') extra += 0.2;
-            if (state.options.skin === 'rough') extra -= 0.2;
-            if (state.options.voice === 'pleasant') extra += 0.2;
-            if (state.options.voice === 'bad') extra -= 0.2;
-            if (state.options.tattoo === 'light') extra += 0.2;
-            if (state.options.tattoo === 'heavy') extra -= 0.2;
-            if (state.options.waist === 'tight') extra += 0.2;
-            if (state.options.waist === 'belly') extra -= 0.2;
-            const final = Math.max(0, base + extra);
-            return { base, extra, final, look10, breast10, figure10, service10 };
-        }
-        function updateSummary() {
-            const { base, extra, final } = calculateScore();
-            document.getElementById('baseScore').textContent = base.toFixed(2);
-            document.getElementById('extraScore').textContent = (extra >= 0 ? '+' : '') + extra.toFixed(1);
-            document.getElementById('finalScore').textContent = final.toFixed(2);
-        }
-        function generateReport() {
-            const teacherId = document.getElementById('teacherId').value;
-            const teacherName = document.getElementById('teacherName').value;
-            const age = document.getElementById('age').value;
-            const height = document.getElementById('height').value;
-            const weight = document.getElementById('weight').value;
-            const price = document.getElementById('price').value;
-            const bust = document.getElementById('bust').value;
-            const shortcoming = document.getElementById('shortcoming').value;
-            const description = document.getElementById('description').value;
-            const { final, look10, breast10, figure10, service10 } = calculateScore();
-            const lookDesc = document.getElementById('lookDesc').textContent;
-            const breastDesc = document.getElementById('breastDesc').textContent;
-            const figureDesc = document.getElementById('figureDesc').textContent;
-            const serviceDesc = document.getElementById('serviceDesc').textContent;
-            const maps = {
-                breastNature: { soft: '天然柔软', normal: '轻微科技', hard: '帮帮硬', null: '未选择' },
-                skin: { smooth: '光滑细腻', normal: '正常', rough: '粗糙暗沉', null: '未选择' },
-                voice: { pleasant: '悦耳动听', normal: '正常', bad: '难听刺耳', null: '未选择' },
-                tattoo: { light: '无纹身', small: '小面积', heavy: '大面积', null: '未选择' },
-                waist: { tight: '紧致', flat: '平坦', belly: '小肚子', null: '未选择' }
+      });
+      if (!res.ok) throw new Error('请求失败');
+      return res.json();
+    }
+
+    // 加载数据
+    async function loadData() {
+      try {
+        // 并行加载AI评分和管理评分
+        const [aiScores, adminScores] = await Promise.all([
+          apiRequest(API_BASE + '/ai_scores?select=*'),
+          apiRequest(API_BASE + '/admin_scores?select=*')
+        ]);
+
+        // 按teacher_id分组聚合管理评分
+        const adminMap = {};
+        adminScores.forEach(score => {
+          if (!adminMap[score.teacher_id]) {
+            adminMap[score.teacher_id] = {
+              reviews: [],
+              totalScore: 0,
+              scoreLook: 0,
+              scoreBreast: 0,
+              scoreFigure: 0,
+              scoreService: 0
             };
-            return `【老师测评报告】
-━━━━━━━
-基本信息
-· 老师ID：${teacherId}
-· 老师姓名：${teacherName}
-· 年龄：${age}岁
-· 身高：${height}cm
-· 体重：${weight}kg
-· 单价：${price}
-· 胸围：${bust}
-基础评分（10分制）：
-· 颜值：${look10}/10 【${lookDesc}】
-· 胸型：${breast10}/10 【${breastDesc}】
-· 身材：${figure10}/10 【${figureDesc}】
-· 服务：${service10}/10 【${serviceDesc}】
-附加项：
-· 胸型质感：${maps.breastNature[state.options.breastNature]}
-· 皮肤状态：${maps.skin[state.options.skin]}
-· 声音条件：${maps.voice[state.options.voice]}
-· 纹身情况：${maps.tattoo[state.options.tattoo]}
-· 腰腹状态：${maps.waist[state.options.waist]}
-最终得分：${final.toFixed(2)}分
-不足之处：
-${shortcoming || '无'}
-详细描述：
-${description}
-━━━━━━━
-测评人：${state.nickname}`;
-        }
-        async function submitToAPI() {
-            const API_URL = 'https://cp.byg88.biz/api/collections/teacher_evaluations/records';
-            const bust = document.getElementById('bust').value;
-            const { final, look10, breast10, figure10, service10 } = calculateScore();
-            const requestBody = {
-                evaluator: state.nickname,
-                teacher_id: document.getElementById('teacherId').value,
-                teacher_name: document.getElementById('teacherName').value,
-                age: document.getElementById('age').value ? parseInt(document.getElementById('age').value) : null,
-                height: document.getElementById('height').value ? parseInt(document.getElementById('height').value) : null,
-                weight: document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null,
-                price: document.getElementById('price').value ? parseInt(document.getElementById('price').value) : null,
-                bust: bust || null,
-                score_look: look10,
-                score_breast: breast10,
-                score_figure: figure10,
-                score_service: service10,
-                final_score: final,
-                breast_nature: state.options.breastNature,
-                skin: state.options.skin,
-                voice: state.options.voice,
-                tattoo: state.options.tattoo,
-                waist: state.options.waist,
-                shortcoming: document.getElementById('shortcoming').value.trim() || null,
-                description: document.getElementById('description').value.trim()
+          }
+          adminMap[score.teacher_id].reviews.push(score);
+          adminMap[score.teacher_id].totalScore += score.final_score;
+          adminMap[score.teacher_id].scoreLook += score.score_look;
+          adminMap[score.teacher_id].scoreBreast += score.score_breast;
+          adminMap[score.teacher_id].scoreFigure += score.score_figure;
+          adminMap[score.teacher_id].scoreService += score.score_service;
+        });
+
+        // 合并数据
+        allData = aiScores.map(ai => {
+          const admin = adminMap[ai.teacher_id];
+          const reviewCount = admin ? admin.reviews.length : 0;
+
+          if (reviewCount > 0) {
+            // 有管理评分，使用管理评分的平均分
+            return {
+              ...ai,
+              score_look: (admin.scoreLook / reviewCount).toFixed(1),
+              score_breast: (admin.scoreBreast / reviewCount).toFixed(1),
+              score_figure: (admin.scoreFigure / reviewCount).toFixed(1),
+              score_service: (admin.scoreService / reviewCount).toFixed(1),
+              final_score: (admin.totalScore / reviewCount).toFixed(1),
+              avg_score: parseFloat((admin.totalScore / reviewCount).toFixed(1)),
+              review_count: reviewCount,
+              has_admin_review: true,
+              source: '管理评分'
             };
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody)
-                });
-                const resJson = await response.json();
-                if (!response.ok) {
-                    showToast(resJson.error || '提交失败', 'error');
-                    console.error('API 提交失败:', resJson);
-                    return false;
-                }
-                showToast('数据已提交服务器','success');
-                console.log('API 提交成功',resJson);
-                return true;
-            } catch (err) {
-                showToast('网络异常，提交失败','error');
-                console.error('API 提交错误:', err);
-                return false;
-            }
+          } else {
+            // 无管理评分，使用AI评分
+            return {
+              ...ai,
+              avg_score: ai.final_score,
+              review_count: 0,
+              has_admin_review: false,
+              source: 'AI评分'
+            };
+          }
+        });
+
+        // 按平均分排序
+        allData.sort((a, b) => b.avg_score - a.avg_score);
+
+        renderRanking();
+      } catch (err) {
+        console.error('加载失败:', err);
+        document.getElementById('rankingList').innerHTML = `
+          <div class="error">
+            <p>加载失败</p>
+            <button onclick="loadData()">重试</button>
+          </div>
+        `;
+      }
+    }
+
+    // 渲染排行榜
+    function renderRanking() {
+      const list = document.getElementById('rankingList');
+      
+      // 按价格筛选
+      let filtered = allData;
+      if (currentRange !== 'all') {
+        filtered = allData.filter(t => {
+          const price = t.price || 0;
+          switch(currentRange) {
+            case '0-500': return price < 500;
+            case '500-800': return price >= 500 && price < 800;
+            case '800-1000': return price >= 800 && price < 1000;
+            case '1000+': return price >= 1000;
+            default: return true;
+          }
+        });
+      }
+
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty-state">暂无数据</div>';
+        return;
+      }
+
+      list.innerHTML = filtered.map((teacher, index) => {
+        const rank = index + 1;
+        const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-other';
+        const rankIcon = rank <= 3 ? ['🥇', '🥈', '🥉'][rank - 1] : rank;
+        const hasReviewClass = teacher.has_admin_review ? 'has-review' : '';
+        const reviewBadge = teacher.has_admin_review ? '<div class="review-badge">✓</div>' : '';
+        
+        return `
+          <div class="ranking-item ${hasReviewClass}" onclick="showDetail('${teacher.teacher_id}')">
+            ${reviewBadge}
+            <div class="rank-badge ${rankClass}">${rankIcon}</div>
+            <div class="teacher-info">
+              <div class="teacher-name">${teacher.teacher_name}</div>
+              <div class="teacher-count">${teacher.review_count}条评价 · ¥${teacher.price || '-'}</div>
+              <div class="teacher-scores">
+                <span>颜值${teacher.score_look}</span>
+                <span>胸${teacher.score_breast}</span>
+                <span>身材${teacher.score_figure}</span>
+                <span>服务${teacher.score_service}</span>
+              </div>
+            </div>
+            <div class="teacher-score">
+              <div class="score-value">${teacher.avg_score}</div>
+              <div class="score-label">综合分</div>
+              <div class="score-source">${teacher.source}</div>
+            </div>
+            <div class="arrow">→</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 显示详情
+    async function showDetail(teacherId) {
+      const teacher = allData.find(t => t.teacher_id === teacherId);
+      if (!teacher) return;
+
+      currentTeacher = teacher;
+      currentReviewIndex = 0;
+
+      document.getElementById('detailName').textContent = teacher.teacher_name;
+      document.getElementById('detailId').querySelector('span').textContent = teacher.teacher_id;
+      document.getElementById('detailCount').textContent = `${teacher.review_count}条评价 · 采集${teacher.collection_count}条`;
+
+      // 加载管理评分
+      try {
+        adminReviews = await apiRequest(API_BASE + `/admin_scores?teacher_id=eq.${teacherId}&order=created_at.desc`);
+      } catch (e) {
+        adminReviews = [];
+      }
+
+      document.getElementById('homePage').style.display = 'none';
+      document.getElementById('detailPage').classList.add('active');
+
+      // 滚动到顶部
+      window.scrollTo(0, 0);
+
+      // 默认显示AI评分
+      switchTab('ai');
+    }
+
+    // 返回首页
+    function showHome() {
+      document.getElementById('detailPage').classList.remove('active');
+      document.getElementById('homePage').style.display = 'block';
+      hideReviewForm();
+    }
+
+    // 切换标签
+    async function switchTab(tab) {
+      currentTab = tab;
+
+      // 更新按钮状态
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+
+      const content = document.getElementById('tabContent');
+      const pagination = document.getElementById('pagination');
+
+      if (tab === 'admin') {
+        pagination.style.display = adminReviews.length > 1 ? 'flex' : 'none';
+        if (adminReviews.length === 0) {
+          content.innerHTML = '<div class="eval-card"><div class="empty-state">暂无管理评分</div></div>';
+        } else {
+          renderAdminReview();
         }
-        async function handleSubmit(e) {
-            e.preventDefault();
-            if(!validateExtraOptions()){
-                return;
-            }
-            const report = generateReport();
-            try {
-                await navigator.clipboard.writeText(report);
-                showToast('报告已复制到剪贴板', 'success');
-            } catch (err) {
-                showToast('复制失败，请手动复制', 'error');
-            }
-            const ok = await submitToAPI();
-            if(ok){
-                document.getElementById('successModal').classList.remove('hidden');
-                document.getElementById('testForm').reset();
-                state.scores = { look: 3, breast: 3, figure: 3, service: 3 };
-                state.options = { breastNature: null, skin: null, voice: null, tattoo: null, waist: null };
-                document.querySelectorAll('.option-btn').forEach(el => {
-                    el.classList.remove('active', 'positive', 'negative');
-                });
-                ['look', 'breast', 'figure', 'service'].forEach(type => {
-                    document.getElementById(type).value = 3;
-                    document.getElementById(type+'Value').textContent = '6分';
-                    document.getElementById(type+'Desc').textContent = scoreDescs[type][2];
-                });
-                document.getElementById('descCount').textContent = '0';
-                updateSummary();
-            }
-            document.getElementById('testForm').reset();
-            state.scores = { look: 3, breast: 3, figure: 3, service: 3 };
-            state.options = { breastNature: null, skin: null, voice: null, tattoo: null, waist: null };
-            document.querySelectorAll('.option-btn').forEach(el => {
-                el.classList.remove('active', 'positive', 'negative');
-            });
-            ['look', 'breast', 'figure', 'service'].forEach(type => {
-                document.getElementById(type).value = 3;
-                document.getElementById(type + 'Value').textContent = '6分';
-                document.getElementById(type + 'Desc').textContent = scoreDescs[type][2];
-            });
-            document.getElementById('descCount').textContent = '0';
-            updateSummary();
+      } else if (tab === 'ai') {
+        pagination.style.display = 'none';
+        content.innerHTML = await renderAICard(currentTeacher);
+      } else if (tab === 'collections') {
+        currentCollectionIndex = 0;
+        await renderCollections(content);
+      }
+    }
+
+    // 渲染管理评分
+    function renderAdminReview() {
+      const review = adminReviews[currentReviewIndex];
+      const content = document.getElementById('tabContent');
+      
+      document.getElementById('pageInfo').textContent = `${currentReviewIndex + 1} / ${adminReviews.length}`;
+      document.getElementById('prevBtn').disabled = currentReviewIndex === 0;
+      document.getElementById('nextBtn').disabled = currentReviewIndex >= adminReviews.length - 1;
+
+      content.innerHTML = `
+        <div class="eval-card">
+          <div class="eval-header compact">
+            <span class="eval-title">管理评分 #${currentReviewIndex + 1}</span>
+            <div class="eval-score-row">
+              <span class="eval-score-value">${review.final_score}</span>
+              <div class="stars">${renderStars(review.final_score)}</div>
+            </div>
+          </div>
+          
+          <div class="score-bars-compact">
+            ${renderScoreBar('颜值', review.score_look, 'score_look')}
+            ${renderScoreBar('胸部', review.score_breast, 'score_breast')}
+            ${renderScoreBar('身材', review.score_figure, 'score_figure')}
+            ${renderScoreBar('服务', review.score_service, 'score_service')}
+          </div>
+          
+          <div class="attrs-grid compact">
+            ${review.shortcoming ? `<div class="attr-item attr-full"><span class="attr-label">缺点</span><span class="attr-value" style="color: #ff6b6b;">${review.shortcoming}</span></div>` : ''}
+          </div>
+          
+          <div class="eval-content compact">
+            <div class="eval-text">${review.description || '暂无详细评价'}</div>
+            <div class="eval-meta">评估人: ${review.evaluator} · ${formatDate(review.created_at)}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 渲染AI评分卡片
+    async function renderAICard(teacher) {
+      // 实时查询采集记录数量
+      let collectionCount = 0;
+      try {
+        const cols = await apiRequest(API_BASE + `/collections?select=id&teacher_id=eq.${teacher.teacher_id}`);
+        collectionCount = cols.length;
+      } catch (e) {
+        collectionCount = teacher.collection_count || 0;
+      }
+
+      return `
+        <div class="eval-card">
+          <div class="eval-header compact">
+            <span class="eval-title">AI综合评分</span>
+            <div class="eval-score-row">
+              <span class="eval-score-value">${teacher.final_score}</span>
+              <div class="stars">${renderStars(teacher.final_score)}</div>
+            </div>
+          </div>
+
+          <div class="score-bars-compact">
+            ${renderScoreBar('颜值', teacher.score_look, 'score_look')}
+            ${renderScoreBar('胸部', teacher.score_breast, 'score_breast')}
+            ${renderScoreBar('身材', teacher.score_figure, 'score_figure')}
+            ${renderScoreBar('服务', teacher.score_service, 'score_service')}
+          </div>
+
+          <div class="attrs-grid compact">
+            <div class="attr-item"><span class="attr-label">年龄</span><span class="attr-value">${teacher.age || '-'}岁</span></div>
+            <div class="attr-item"><span class="attr-label">身高</span><span class="attr-value">${teacher.height || '-'}cm</span></div>
+            <div class="attr-item"><span class="attr-label">体重</span><span class="attr-value">${teacher.weight || '-'}kg</span></div>
+            <div class="attr-item"><span class="attr-label">价格</span><span class="attr-value">¥${teacher.price || '-'}</span></div>
+            <div class="attr-item"><span class="attr-label">胸围</span><span class="attr-value">${teacher.bust || '-'}</span></div>
+            <div class="attr-item"><span class="attr-label">采集数</span><span class="attr-value">${collectionCount}条</span></div>
+            ${teacher.shortcoming ? `<div class="attr-item attr-full"><span class="attr-label">缺点</span><span class="attr-value" style="color: #ff6b6b;">${teacher.shortcoming}</span></div>` : ''}
+          </div>
+
+          <div class="eval-content compact">
+            <div class="eval-text">${teacher.description || '暂无AI评价'}</div>
+            <div class="eval-meta">更新时间: ${formatDate(teacher.updated_at)}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 采集记录状态
+    let collections = [];
+    let currentCollectionIndex = 0;
+
+    // 渲染采集记录
+    async function renderCollections(container) {
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+      try {
+        if (collections.length === 0) {
+          collections = await apiRequest(API_BASE + `/collections?select=*&teacher_id=eq.${currentTeacher.teacher_id}&order=collected_at.desc`);
         }
-        function closeSuccessModal() {
-            document.getElementById('successModal').classList.add('hidden');
+
+        if (collections.length === 0) {
+          container.innerHTML = '<div class="eval-card"><div class="empty-state">暂无采集记录</div></div>';
+          document.getElementById('pagination').style.display = 'none';
+          return;
         }
-        async function copyAgain() {
-            try {
-                await navigator.clipboard.writeText(generateReport());
-                showToast('已复制', 'success');
-            } catch (err) {
-                showToast('复制失败', 'error');
-            }
+
+        renderSingleCollection();
+      } catch (e) {
+        container.innerHTML = '<div class="eval-card"><div class="empty-state">加载失败</div></div>';
+        document.getElementById('pagination').style.display = 'none';
+      }
+    }
+
+    // 渲染单条采集记录
+    function renderSingleCollection() {
+      const container = document.getElementById('tabContent');
+      const c = collections[currentCollectionIndex];
+
+      document.getElementById('pagination').style.display = collections.length > 1 ? 'flex' : 'none';
+      document.getElementById('pageInfo').textContent = `${currentCollectionIndex + 1} / ${collections.length}`;
+      document.getElementById('prevBtn').disabled = currentCollectionIndex === 0;
+      document.getElementById('nextBtn').disabled = currentCollectionIndex >= collections.length - 1;
+
+      container.innerHTML = `
+        <div class="eval-card">
+          <div class="eval-header compact">
+            <span class="eval-title">采集记录 #${currentCollectionIndex + 1}</span>
+            <span class="collection-status ${c.is_processed ? 'processed' : 'pending'}">${c.is_processed ? '已处理' : '待处理'}</span>
+          </div>
+          <div class="collection-item" style="margin-top: 12px;">
+            <div class="collection-text">${c.description || '无描述'}</div>
+            <div class="collection-meta">${formatDate(c.collected_at)}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 采集记录翻页
+    function prevCollection() {
+      if (currentCollectionIndex > 0) {
+        currentCollectionIndex--;
+        renderSingleCollection();
+      }
+    }
+
+    function nextCollection() {
+      if (currentCollectionIndex < collections.length - 1) {
+        currentCollectionIndex++;
+        renderSingleCollection();
+      }
+    }
+
+    // 渲染评分条
+    function renderScoreBar(label, score, type) {
+      const percentage = (score / 10) * 100;
+      const desc = getScoreDesc(type, score);
+      return `
+        <div class="score-bar">
+          <span class="score-bar-label">${label}</span>
+          <div class="score-bar-track">
+            <div class="score-bar-fill" style="width: ${percentage}%"></div>
+          </div>
+          <span class="score-bar-value">${score}</span>
+        </div>
+        ${desc ? `<div class="score-desc-text">${desc}</div>` : ''}
+      `;
+    }
+
+    // 渲染星星
+    function renderStars(score) {
+      const fullStars = Math.floor(score / 2);
+      const hasHalf = (score % 2) >= 1;
+      let html = '';
+      for (let i = 0; i < 5; i++) {
+        if (i < fullStars) html += '<span class="star">★</span>';
+        else if (i === fullStars && hasHalf) html += '<span class="star">★</span>';
+        else html += '<span class="star empty">★</span>';
+      }
+      return html;
+    }
+
+    // 格式化日期
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const date = new Date(dateStr);
+      return `${date.getMonth() + 1}月${date.getDate()}日`;
+    }
+
+    // 翻页
+    function prevReview() {
+      if (currentTab === 'admin') {
+        if (currentReviewIndex > 0) {
+          currentReviewIndex--;
+          renderAdminReview();
         }
-        function showToast(msg, type) {
-            const toast = document.createElement('div');
-            toast.className = 'toast ' + type;
-            toast.textContent = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+      } else if (currentTab === 'collections') {
+        prevCollection();
+      }
+    }
+
+    function nextReview() {
+      if (currentTab === 'admin') {
+        if (currentReviewIndex < adminReviews.length - 1) {
+          currentReviewIndex++;
+          renderAdminReview();
         }
-</script>
+      } else if (currentTab === 'collections') {
+        nextCollection();
+      }
+    }
+
+    // 密码弹窗
+    function showPasswordModal() {
+      document.getElementById('passwordModal').classList.add('active');
+      document.getElementById('passwordInput').value = '';
+      document.getElementById('passwordInput').focus();
+    }
+
+    function hidePasswordModal() {
+      document.getElementById('passwordModal').classList.remove('active');
+    }
+
+    async function verifyPassword() {
+      const input = document.getElementById('passwordInput').value;
+      try {
+        const response = await fetch(`${API_BASE}/api/verify-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: input })
+        });
+        const result = await response.json();
+        if (result.success && result.valid) {
+          hidePasswordModal();
+          showReviewForm();
+        } else {
+          showToast('密码错误');
+        }
+      } catch (error) {
+        console.error('密码验证失败:', error);
+        showToast('验证失败，请检查网络');
+      }
+    }
+
+    // 测评表单
+    function showReviewForm() {
+      document.getElementById('reviewForm').classList.add('active');
+      // 预填教师名称
+      document.getElementById('reviewEvaluator').focus();
+    }
+
+    function hideReviewForm() {
+      document.getElementById('reviewForm').classList.remove('active');
+      // 清空表单
+      document.getElementById('reviewEvaluator').value = '';
+      document.getElementById('scoreLook').value = '8';
+      document.getElementById('scoreBreast').value = '8';
+      document.getElementById('scoreFigure').value = '8';
+      document.getElementById('scoreService').value = '8';
+      document.getElementById('reviewShortcoming').value = '';
+      document.getElementById('reviewDescription').value = '';
+    }
+
+    // 提交测评
+    async function submitReview() {
+      const evaluator = document.getElementById('reviewEvaluator').value.trim();
+      const scoreLook = parseFloat(document.getElementById('scoreLook').value);
+      const scoreBreast = parseFloat(document.getElementById('scoreBreast').value);
+      const scoreFigure = parseFloat(document.getElementById('scoreFigure').value);
+      const scoreService = parseFloat(document.getElementById('scoreService').value);
+      const shortcoming = document.getElementById('reviewShortcoming').value.trim();
+      const description = document.getElementById('reviewDescription').value.trim();
+
+      if (!evaluator) {
+        showToast('请输入评估人');
+        return;
+      }
+
+      const finalScore = ((scoreLook + scoreBreast + scoreFigure + scoreService) / 4).toFixed(1);
+
+      try {
+        const response = await fetch(API_BASE + '/admin_scores', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            teacher_id: currentTeacher.teacher_id,
+            teacher_name: currentTeacher.teacher_name,
+            evaluator,
+            score_look: scoreLook,
+            score_breast: scoreBreast,
+            score_figure: scoreFigure,
+            score_service: scoreService,
+            final_score: parseFloat(finalScore),
+            shortcoming: shortcoming || null,
+            description: description || null
+          })
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || '请求失败');
+        }
+
+        showToast('测评提交成功');
+        hideReviewForm();
+
+        // 刷新数据
+        await loadData();
+        // 刷新当前教师详情
+        await showDetail(currentTeacher.teacher_id);
+      } catch (e) {
+        showToast('提交失败: ' + e.message);
+        console.error('提交错误:', e);
+      }
+    }
+
+    // 价格筛选
+    document.querySelectorAll('.range-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.range-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentRange = tab.dataset.range;
+        renderRanking();
+      });
+    });
+
+    // 标签切换
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    // 密码输入框回车
+    document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') verifyPassword();
+    });
+
+    // 初始化
+    loadData();
+  </script>
 </body>
 </html>

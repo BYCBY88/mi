@@ -116,7 +116,7 @@
 
     .range-tab {
       flex: 1;
-      min-width: 60px;
+      min-width: 70px;
       padding: 8px 12px;
       text-align: center;
       font-size: 14px;
@@ -127,6 +127,26 @@
       cursor: pointer;
       transition: all 0.2s;
       white-space: nowrap;
+    }
+
+    .search-box {
+      padding: 12px 16px;
+      background: white;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 16px;
+      border: 1px solid #e5e5e5;
+      border-radius: 20px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: #ff6b6b;
     }
 
     .range-tab.active {
@@ -173,16 +193,17 @@
       position: absolute;
       top: -4px;
       right: -4px;
-      width: 20px;
-      height: 20px;
-      background: #4caf50;
-      border-radius: 50%;
+      padding: 4px 8px;
+      background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
-      font-size: 12px;
-      box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+      font-size: 11px;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+      white-space: nowrap;
     }
 
     .rank-badge {
@@ -856,11 +877,13 @@
     </div>
 
     <div class="range-tabs">
-      <div class="range-tab active" data-range="all">全部</div>
-      <div class="range-tab" data-range="0-500">500以下</div>
-      <div class="range-tab" data-range="500-800">500-800</div>
-      <div class="range-tab" data-range="800-1000">800-1000</div>
-      <div class="range-tab" data-range="1000+">1000以上</div>
+      <div class="range-tab active" data-range="all">总榜</div>
+      <div class="range-tab" data-range="4-">4及以下</div>
+      <div class="range-tab" data-range="5">5</div>
+      <div class="range-tab" data-range="6+">6及以上</div>
+    </div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="搜索名字或ID..." oninput="handleSearch()">
     </div>
 
     <div class="container">
@@ -1072,7 +1095,7 @@
               avg_score: parseFloat(admin.avg_final_score.toFixed(1)),
               review_count: admin.review_count,
               has_admin_review: true,
-              source: '管理评分'
+              source: '实测评分'
             };
           } else {
             // 无管理评分，使用AI评分
@@ -1105,7 +1128,7 @@
               avg_score: parseFloat(admin.avg_final_score.toFixed(1)),
               review_count: admin.review_count,
               has_admin_review: true,
-              source: '管理评分',
+              source: '实测评分',
               collection_count: 0
             });
           }
@@ -1136,13 +1159,21 @@
         filtered = allData.filter(t => {
           const price = t.price || 0;
           switch(currentRange) {
-            case '0-500': return price < 500;
-            case '500-800': return price >= 500 && price < 800;
-            case '800-1000': return price >= 800 && price < 1000;
-            case '1000+': return price >= 1000;
+            case '4-': return price <= 4;
+            case '5': return price === 5;
+            case '6+': return price >= 6;
             default: return true;
           }
         });
+      }
+
+      // 按搜索词筛选
+      const searchTerm = document.getElementById('searchInput')?.value?.trim().toLowerCase();
+      if (searchTerm) {
+        filtered = filtered.filter(t =>
+          (t.teacher_name && t.teacher_name.toLowerCase().includes(searchTerm)) ||
+          (t.teacher_id && t.teacher_id.toLowerCase().includes(searchTerm))
+        );
       }
 
       if (filtered.length === 0) {
@@ -1155,7 +1186,7 @@
         const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-other';
         const rankIcon = rank <= 3 ? ['🥇', '🥈', '🥉'][rank - 1] : rank;
         const hasReviewClass = teacher.has_admin_review ? 'has-review' : '';
-        const reviewBadge = teacher.has_admin_review ? '<div class="review-badge">✓</div>' : '';
+        const reviewBadge = teacher.has_admin_review ? '<div class="review-badge">实测</div>' : '';
         
         return `
           <div class="ranking-item ${hasReviewClass}" onclick="showDetail('${teacher.teacher_id}')">
@@ -1572,6 +1603,11 @@
         renderRanking();
       });
     });
+
+    // 搜索功能
+    function handleSearch() {
+      renderRanking();
+    }
 
     // 标签切换
     document.querySelectorAll('.tab-btn').forEach(btn => {

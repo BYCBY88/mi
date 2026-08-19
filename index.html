@@ -1037,49 +1037,40 @@
     // 加载数据
     async function loadData() {
       try {
-        // 并行加载AI评分和管理评分
-        const [aiScores, adminScores] = await Promise.all([
+        // 并行加载AI评分和分组管理评分
+        const [aiScores, adminGrouped] = await Promise.all([
           apiRequest(API_BASE + '/api/ai-scores'),
-          apiRequest(API_BASE + '/api/admin-scores')
+          apiRequest(API_BASE + '/api/admin-scores/grouped')
         ]);
 
-        // 按teacher_id分组聚合管理评分
+        // 将分组管理评分转为Map
         const adminMap = {};
-        adminScores.forEach(score => {
-          if (!adminMap[score.teacher_id]) {
-            adminMap[score.teacher_id] = {
-              reviews: [],
-              totalScore: 0,
-              scoreLook: 0,
-              scoreBreast: 0,
-              scoreFigure: 0,
-              scoreService: 0
-            };
-          }
-          adminMap[score.teacher_id].reviews.push(score);
-          adminMap[score.teacher_id].totalScore += score.final_score;
-          adminMap[score.teacher_id].scoreLook += score.score_look;
-          adminMap[score.teacher_id].scoreBreast += score.score_breast;
-          adminMap[score.teacher_id].scoreFigure += score.score_figure;
-          adminMap[score.teacher_id].scoreService += score.score_service;
+        adminGrouped.forEach(item => {
+          adminMap[item.teacher_id] = {
+            teacher_id: item.teacher_id,
+            teacher_name: item.teacher_name,
+            avg_score_look: item.avg_score_look,
+            avg_score_breast: item.avg_score_breast,
+            avg_score_service: item.avg_score_service,
+            avg_final_score: item.avg_final_score,
+            review_count: item.review_count
+          };
         });
 
-        // 合并数据
+        // 合并数据：以AI评分为基础，叠加管理评分
         allData = aiScores.map(ai => {
           const admin = adminMap[ai.teacher_id];
-          const reviewCount = admin ? admin.reviews.length : 0;
 
-          if (reviewCount > 0) {
+          if (admin && admin.review_count > 0) {
             // 有管理评分，使用管理评分的平均分
             return {
               ...ai,
-              score_look: (admin.scoreLook / reviewCount).toFixed(1),
-              score_breast: (admin.scoreBreast / reviewCount).toFixed(1),
-              score_figure: (admin.scoreFigure / reviewCount).toFixed(1),
-              score_service: (admin.scoreService / reviewCount).toFixed(1),
-              final_score: (admin.totalScore / reviewCount).toFixed(1),
-              avg_score: parseFloat((admin.totalScore / reviewCount).toFixed(1)),
-              review_count: reviewCount,
+              score_look: admin.avg_score_look.toFixed(1),
+              score_breast: admin.avg_score_breast.toFixed(1),
+              score_service: admin.avg_score_service.toFixed(1),
+              final_score: admin.avg_final_score.toFixed(1),
+              avg_score: parseFloat(admin.avg_final_score.toFixed(1)),
+              review_count: admin.review_count,
               has_admin_review: true,
               source: '管理评分'
             };
@@ -1092,6 +1083,31 @@
               has_admin_review: false,
               source: 'AI评分'
             };
+          }
+        });
+
+        // 添加只有管理评分没有AI评分的教师
+        adminGrouped.forEach(admin => {
+          if (!aiScores.find(ai => ai.teacher_id === admin.teacher_id)) {
+            allData.push({
+              teacher_id: admin.teacher_id,
+              teacher_name: admin.teacher_name,
+              age: null,
+              height: null,
+              weight: null,
+              price: null,
+              bust: null,
+              score_look: admin.avg_score_look.toFixed(1),
+              score_breast: admin.avg_score_breast.toFixed(1),
+              score_figure: '-',
+              score_service: admin.avg_score_service.toFixed(1),
+              final_score: admin.avg_final_score.toFixed(1),
+              avg_score: parseFloat(admin.avg_final_score.toFixed(1)),
+              review_count: admin.review_count,
+              has_admin_review: true,
+              source: '管理评分',
+              collection_count: 0
+            });
           }
         });
 
@@ -1180,7 +1196,8 @@
 
       // 加载管理评分
       try {
-        adminReviews = await apiRequest(API_BASE + `/api/admin-scores?teacher_id=${teacherId}`);
+        const result = await apiRequest(API_BASE + `/api/admin-scores?teacher_id=${teacherId}`);
+        adminReviews = result.data || result || [];
       } catch (e) {
         adminReviews = [];
       }
@@ -1273,7 +1290,8 @@
       // 实时查询采集记录数量
       let collectionCount = 0;
       try {
-        const cols = await apiRequest(API_BASE + `/api/collections?teacher_id=${teacher.teacher_id}`);
+        const result = await apiRequest(API_BASE + `/api/collections?teacher_id=${teacher.teacher_id}`);
+        const cols = result.data || result || [];
         collectionCount = cols.length;
       } catch (e) {
         collectionCount = teacher.collection_count || 0;
@@ -1324,7 +1342,8 @@
 
       try {
         if (collections.length === 0) {
-          collections = await apiRequest(API_BASE + `/api/collections?teacher_id=${currentTeacher.teacher_id}`);
+          const result = await apiRequest(API_BASE + `/api/collections?teacher_id=${currentTeacher.teacher_id}`);
+          collections = result.data || result || [];
         }
 
         if (collections.length === 0) {

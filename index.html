@@ -879,11 +879,11 @@
     </div>
 
     <div class="range-tabs">
-      <div class="range-tab active" data-range="all">总榜</div>
+      <div class="range-tab active" data-range="unmeasured">待验证</div>      
+      <div class="range-tab" data-range="all">总榜</div>
       <div class="range-tab" data-range="4-">4及以下</div>
       <div class="range-tab" data-range="5">5</div>
       <div class="range-tab" data-range="6+">6及以上</div>
-      <div class="range-tab" data-range="unmeasured">未实测</div>
     </div>
     <div class="range-stats" id="rangeStats" style="text-align: center; padding: 8px 16px; font-size: 13px; color: #666; background: #f5f5f5;">共 0 位老师</div>
     <div class="search-box">
@@ -1243,7 +1243,7 @@
     function renderRanking() {
       const list = document.getElementById('rankingList');
       
-      // 按价格筛选（4及以下=<=4, 5=5, 6及以上=>=6, 未实测=只有AI评分没有实测评分）
+      // 按价格筛选（4及以下=<=4, 5=5, 6及以上=>=6, 待验证=只有AI评分没有实测评分）
       let filtered = allData;
       if (currentRange !== 'all') {
         filtered = allData.filter(t => {

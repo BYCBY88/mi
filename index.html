@@ -237,7 +237,14 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
+    
+    .teacher-name .list-tid {
+      font-size:12px;
+      color:#888;
+      font-weight:normal;
+      margin-left:6px;
+    }
+    
     .teacher-count {
       font-size: 11px;
       color: #666;
@@ -1291,7 +1298,7 @@
             ${reviewBadge}
             <div class="rank-badge ${rankClass}">${rankIcon}</div>
             <div class="teacher-info">
-              <div class="teacher-name">${teacher.teacher_name}</div>
+              <div class="teacher-name">${teacher.teacher_name} <span class="list-tid">${teacher.teacher_id}</span></div>
               <div class="teacher-count">${teacher.review_count}条评价 · ${teacher.collection_count || 0}条采集 · ¥${teacher.price || '-'}</div>
               <div class="teacher-scores">
                 <span>颜值${teacher.display_score_look || teacher.score_look || '-'}</span>

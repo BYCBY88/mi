@@ -1363,15 +1363,12 @@
     // 切换标签
     async function switchTab(tab) {
       currentTab = tab;
-
       // 更新按钮状态
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.tab === tab);
       });
-
       const content = document.getElementById('tabContent');
       const pagination = document.getElementById('pagination');
-
       if (tab === 'admin') {
         pagination.style.display = adminReviews.length > 1 ? 'flex' : 'none';
         if (adminReviews.length === 0) {
@@ -1383,6 +1380,8 @@
         pagination.style.display = 'none';
         content.innerHTML = await renderAICard(currentTeacher);
       } else if (tab === 'collections') {
+        // ==========新增这一行，切换到采集标签时清空缓存==========
+        collections = [];
         currentCollectionIndex = 0;
         await renderCollections(content);
       }
@@ -1490,19 +1489,16 @@
     // 渲染采集记录
     async function renderCollections(container) {
       container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-
       try {
-        if (collections.length === 0) {
-          const result = await apiRequest(API_BASE + `/api/collections?teacher_id=${currentTeacher.teacher_id}`);
-          collections = result.data || result || [];
-        }
-
+        // =====删除原来的 if(collections.length===0) 判断，每次都拉取当前老师采集数据=====
+        const result = await apiRequest(API_BASE + `/api/collections?teacher_id=${currentTeacher.teacher_id}`);
+        collections = result.data || result || [];
+    
         if (collections.length === 0) {
           container.innerHTML = '<div class="eval-card"><div class="empty-state">暂无采集记录</div></div>';
           document.getElementById('pagination').style.display = 'none';
           return;
         }
-
         renderSingleCollection();
       } catch (e) {
         container.innerHTML = '<div class="eval-card"><div class="empty-state">加载失败</div></div>';

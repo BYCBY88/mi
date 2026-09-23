@@ -1259,7 +1259,7 @@
             case '4-': return price <= 4;
             case '5': return price === 5;
             case '6+': return price >= 6;
-            case 'unmeasured': return !t.has_admin_review && t.has_ai_score;
+            case 'all': return !t.has_admin_review && t.has_ai_score;
             default: return true;
           }
         });

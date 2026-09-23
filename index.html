@@ -1038,7 +1038,7 @@
     let currentTab = 'admin';
     let currentReviewIndex = 0;
     let adminReviews = [];
-    let currentRange = 'unmeasured';
+    let currentRange = 'all';
 
     // 评分描述映射
     const scoreDescMap = {
@@ -1259,7 +1259,7 @@
             case '4-': return price <= 4;
             case '5': return price === 5;
             case '6+': return price >= 6;
-            case 'all': return !t.has_admin_review && t.has_ai_score;
+            case 'unmeasured': return !t.has_admin_review && t.has_ai_score;
             default: return true;
           }
         });
